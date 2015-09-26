@@ -1,4 +1,4 @@
-<rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" version="2.0"><channel><title>Mindful Ramblings</title><description>My journey as a software engineer.</description><link>http://localhost:2368/</link><generator>Ghost 0.7</generator><lastBuildDate>Sat, 26 Sep 2015 00:15:09 GMT</lastBuildDate><atom:link href="http://localhost:2368/rss/" rel="self" type="application/rss+xml"/><ttl>60</ttl><item><title>Setting up a Ghost Blog with Github Pages</title><description>&lt;!--  
+<rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" version="2.0"><channel><title>Mindful Ramblings</title><description>My journey as a software engineer.</description><link>http://localhost:2368/</link><generator>Ghost 0.7</generator><lastBuildDate>Sat, 26 Sep 2015 16:49:17 GMT</lastBuildDate><atom:link href="http://localhost:2368/rss/" rel="self" type="application/rss+xml"/><ttl>60</ttl><item><title>Setting up a Ghost Blog with Github Pages</title><description>&lt;!--  
 ** check url changing in config.js **
 
 steps:  
@@ -18,7 +18,7 @@ add disqus
 
 &lt;p&gt;&lt;a href="https://pages.github.com/"&gt;Github Pages&lt;/a&gt; is a static site host on &lt;a href="https://github.com/"&gt;Github&lt;/a&gt; for hosting simple blogs for developers or landing pages for their open-source projects. &lt;a href="https://ghost.org/"&gt;Ghost&lt;/a&gt; is "just a blogging platform" that's open source and is known for being extremely easy to use that is also beautiful out-of-the-box. It's very similar to &lt;a href="http://localhost:2368/2015/09/24/ghost-with-github/"&gt;Jekyll&lt;/a&gt;, a Ruby-based static site generator that Github Pages uses &lt;a href="https://jekyllrb.com/docs/github-pages/"&gt;behind the scenes&lt;/a&gt;, except that Ghost is written in &lt;a href="https://nodejs.org/en/"&gt;Node.js&lt;/a&gt; and was started as a &lt;a href="https://www.kickstarter.com/projects/johnonolan/ghost-just-a-blogging-platform/description"&gt;Kickstarter project&lt;/a&gt;.&lt;/p&gt;
 
-&lt;p&gt;This blog post (built with Ghost and hosted on &lt;a href="http://sunny-g.github.io"&gt;my Github Pages blog&lt;/a&gt;) will guide you through the process of publishing your own personal blog hosted by Github for free! The general idea behind this process is to let &lt;a href="https://github.com/axitkhurana/buster"&gt;Buster&lt;/a&gt; generate a static HTML and CSS version of your locally-running Ghost blog server, publish the files to a Github repo, and then 1-20 minutes later you enjoy your blog, which pulls the pages from that repo and serves them on the default URL of &lt;a href="http://sunny-g.github.io"&gt;&amp;lt; your-github-username &gt;.github.io&lt;/a&gt;!&lt;/p&gt;
+&lt;p&gt;This blog post (built with Ghost and hosted on &lt;a href="http://sunny-g.github.io"&gt;my Github Pages blog&lt;/a&gt;) will guide you through the process of publishing your own personal blog hosted by Github for free! The general idea behind this process is to let &lt;a href="https://github.com/axitkhurana/buster"&gt;Buster&lt;/a&gt; generate a static HTML and CSS version of your locally-running Ghost blog server, publish the files to a Github repo, and then 1-20 minutes later you enjoy your blog, which pulls the pages from that repo and serves them on the default URL of &lt;a href="http://sunny-g.github.io"&gt;[your-github-username].github.io&lt;/a&gt;!&lt;/p&gt;
 
 &lt;h4 id="installdependenciesbusterandghost"&gt;Install Dependencies, &lt;code&gt;buster&lt;/code&gt; and Ghost&lt;/h4&gt;
 
@@ -27,7 +27,7 @@ add disqus
 &lt;pre&gt;&lt;code&gt;$ mkdir ~/Dropbox/blog
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Then you'll need to make sure you have both &lt;a href="https://nodejs.org/en/"&gt;Node.js&lt;/a&gt; and &lt;a href="https://www.python.org/"&gt;Python&lt;/a&gt; installed to run the Ghost server and Buster. Apple Macs should have Python installed by default and I prefer using &lt;a href="https://github.com/creationix/nvm"&gt;nvm&lt;/a&gt; and &lt;a href="http://brew.sh/"&gt;homebrew&lt;/a&gt; to install Node.js and &lt;a href="https://www.npmjs.com/"&gt;npm&lt;/a&gt;. If you need to install Node.js and npm, I recommend following this &lt;a href="http://www.codydaig.me/installing-node-with-nvm/"&gt;simple guide&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Then you'll need to make sure you have both &lt;a href="https://nodejs.org/en/"&gt;Node.js&lt;/a&gt; and &lt;a href="https://www.python.org/"&gt;Python&lt;/a&gt; installed to run the Ghost server and Buster. Apple Macs should have Python installed by default and I prefer using &lt;a href="https://github.com/creationix/nvm"&gt;nvm&lt;/a&gt; and &lt;a href="http://brew.sh/"&gt;homebrew&lt;/a&gt; to install Node.js and &lt;a href="https://www.npmjs.com/"&gt;npm&lt;/a&gt;. If you need to install Node.js and npm, I recommend following this &lt;a href="http://www.codydaig.me/installing-node-with-nvm/"&gt;simple guide&lt;/a&gt; that uses homebrew to install nvm, which will let you manage multiple Node.js and npm versions easily.&lt;/p&gt;
 
 &lt;p&gt;We'll also need a tool called &lt;a href="http://www.gnu.org/software/wget/"&gt;wget&lt;/a&gt; that's used to retrieve content from web servers, and we'll also install it using homebrew:  &lt;/p&gt;
 
@@ -59,13 +59,14 @@ $ npm start
 
 &lt;h4 id="generatingthestaticfilesforyourblogsrepo"&gt;Generating the static files for your blog's repo&lt;/h4&gt;
 
-&lt;p&gt;The next thing you'll want to do is create a repo for your static blog. On Github, create a new repo whose name is &lt;code&gt;your-username.github.io&lt;/code&gt;. The repo's name must be &lt;code&gt;your-username.github.io&lt;/code&gt;, otherwise Github won't know to create a site at that URL from that repo.&lt;/p&gt;
+&lt;p&gt;The next thing you'll want to do is create a repo for your static blog. On Github, create a new repo whose name is &lt;code&gt;[your-username].github.io&lt;/code&gt;. The repo's name must be &lt;code&gt;[your-username].github.io&lt;/code&gt;, otherwise Github won't know to create a site at that URL from that repo.&lt;/p&gt;
 
 &lt;p&gt;Once it's been created, lets start our Ghost server, create a new tab in our terminal and use &lt;code&gt;buster&lt;/code&gt; to create our blog's repo and its static files:  &lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;# (in a new tab) get back to the blog folder
 $ cd ~/Dropbox/blog
-$ buster setup --gh-repo="https://github.com/&amp;lt;username&amp;gt;/&amp;lt;username&amp;gt;.github.io.git"
+$ buster setup --gh-repo=\
+"https://github.com/&amp;lt;username&amp;gt;/&amp;lt;username&amp;gt;.github.io.git"
 $ buster generate
 $ buster deploy
 &lt;/code&gt;&lt;/pre&gt;
