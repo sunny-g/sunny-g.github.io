@@ -1,0 +1,262 @@
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>Quantum Computer-Proof Digital Signatures, Part 1</title>
+    <meta name="description" content="">
+
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+
+    <link rel="stylesheet" type="text/css" href="../../../../assets/css/screen.css?v=0266bdede6">
+    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic%7COpen+Sans:700,400">
+
+    <link rel="canonical" href="index.html">
+    <meta name="referrer" content="origin">
+    
+    <meta property="og:site_name" content="Mindful Ramblings">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Quantum Computer-Proof Digital Signatures, Part 1">
+    <meta property="og:description" content="For my MVP (minimal viable product) project at Hack Reactor, I developed a browser library that implements two quantum-computer-proof digital signature algorithms known as the Lamport and Merkle signature schemes. In this post, I'll be going over the Lamport scheme...">
+    <meta property="og:url" content="http://localhost:2368/2014/12/07/lamport-key-pairs-and-signature-scheme/">
+    <meta property="article:published_time" content="2014-12-07T21:08:05.100Z">
+    <meta property="article:modified_time" content="2015-04-10T01:33:44.417Z">
+    <meta property="article:tag" content="lamport">
+    <meta property="article:tag" content="encryption">
+    <meta property="article:tag" content="signature">
+    <meta property="article:tag" content="digital signature">
+    <meta property="article:tag" content="merkle">
+    <meta property="article:tag" content="quantum computer">
+    
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Quantum Computer-Proof Digital Signatures, Part 1">
+    <meta name="twitter:description" content="For my MVP (minimal viable product) project at Hack Reactor, I developed a browser library that implements two quantum-computer-proof digital signature algorithms known as the Lamport and Merkle signature schemes. In this post, I'll be going over the Lamport scheme...">
+    <meta name="twitter:url" content="http://localhost:2368/2014/12/07/lamport-key-pairs-and-signature-scheme/">
+    
+    <script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "Article",
+    "publisher": "Mindful Ramblings",
+    "author": {
+        "@type": "Person",
+        "name": "Sunny G",
+        "image": "//www.gravatar.com/avatar/1700de0def81fad9d8987101ee6704d6?s=250&d=mm&r=x",
+        "url": "http://localhost:2368/author/sunny",
+        "sameAs": "http://blog.sunnyg.io",
+        "description": null
+    },
+    "headline": "Quantum Computer-Proof Digital Signatures, Part 1",
+    "url": "http://localhost:2368/2014/12/07/lamport-key-pairs-and-signature-scheme/",
+    "datePublished": "2014-12-07T21:08:05.100Z",
+    "dateModified": "2015-04-10T01:33:44.417Z",
+    "keywords": "lamport, encryption, signature, digital signature, merkle, quantum computer",
+    "description": "For my MVP (minimal viable product) project at Hack Reactor, I developed a browser library that implements two quantum-computer-proof digital signature algorithms known as the Lamport and Merkle signature schemes. In this post, I&#x27;ll be going over the Lamport scheme..."
+}
+    </script>
+
+    <meta name="generator" content="Ghost 0.7">
+    <link rel="alternate" type="application/rss+xml" title="Mindful Ramblings" href="../../../../rss/index.html">
+</head>
+<body class="post-template tag-lamport tag-encryption tag-signature tag-digital-signature tag-merkle tag-quantum-computer nav-closed">
+
+    <div class="nav">
+    <h3 class="nav-title">Menu</h3>
+    <a href="index.html#" class="nav-close">
+        <span class="hidden">Close</span>
+    </a>
+    <ul>
+            <li class="nav-home" role="presentation"><a href="../../../../">Home</a></li>
+    </ul>
+    <a class="subscribe-button icon-feed" href="../../../../rss/index.rss">Subscribe</a>
+</div>
+<span class="nav-cover"></span>
+
+
+    <div class="site-wrapper">
+
+        
+
+
+<header class="main-header post-head no-cover">
+    <nav class="main-nav  clearfix">
+        
+            <a class="menu-button icon-menu" href="index.html#"><span class="word">Menu</span></a>
+    </nav>
+</header>
+
+<main class="content" role="main">
+    <article class="post tag-lamport tag-encryption tag-signature tag-digital-signature tag-merkle tag-quantum-computer featured">
+
+        <header class="post-header">
+            <h1 class="post-title">Quantum Computer-Proof Digital Signatures, Part 1</h1>
+            <section class="post-meta">
+                <time class="post-date" datetime="2014-12-07">07 December 2014</time>  on <a href="../../../../tag/lamport/">lamport</a>, <a href="../../../../tag/encryption/">encryption</a>, <a href="../../../../tag/signature/">signature</a>, <a href="../../../../tag/digital-signature/">digital signature</a>, <a href="../../../../tag/merkle/">merkle</a>, <a href="../../../../tag/quantum-computer/">quantum computer</a>
+            </section>
+        </header>
+
+        <section class="post-content">
+            <p>For my MVP (minimal viable product) project at <a href="http://hackreactor.com">Hack Reactor</a>, I developed a browser <a href="https://github.com/sunny-g/lamport-merkle.js">library</a> that implements two quantum-computer-proof digital signature algorithms known as the <a href="https://en.wikipedia.org/wiki/Lamport_signature">Lamport</a> and <a href="https://en.wikipedia.org/wiki/Merkle_signature_scheme">Merkle signature schemes</a>. In this post, I'll be going over the Lamport scheme and how it works. </p>
+
+<h3 id="keypairstructure">Keypair Structure</h3>
+
+<p>Unlike keypairs of traditional encryption algorithms, Lamport keys are not mathematically tied to one another nor are they derived from hard-to-solve problems like prime factorization (this is in fact the reason this algorithm is quantum computer-proof: so long as our secure hashing function can't have solving its inverse optimized by quantum computing, we should be safe). Our private key then is simply composed of 256 pairs of 32 byte numbers while the public key is made up of the hashes of each number:</p>
+
+<pre><code>var LamportKeypair = function() {
+  this._privKey = [];
+  this.pubKey = [];
+  this.used = false;
+
+  for (var i = 0; i &lt; 256; i++) {
+    var num1 = random32ByteString();
+    var num2 = random32ByteString();
+    var hash1 = hash(num1);
+    var hash2 = hash(num2);
+
+    this._privKey.push([num1, num2]);
+    this.pubKey.push([hash1, hash2]);
+  }
+}; 
+</code></pre>
+
+<h3 id="messagesigning">Message Signing</h3>
+
+<p>To sign a message with this key, we only have to do two things:</p>
+
+<ol>
+<li>Generate a 32 byte (256 bit) hash of the message.  </li>
+<li>For each bit in the message, publish either the 1st or 2nd random number of that bit's corresponding pair of numbers within our private key.</li>
+</ol>
+
+<p>These steps end up looking like this:</p>
+
+<pre><code>LamportKeypair.prototype.sign = function(msg) {
+  var msgHash = hash(msg);
+  var signature = [];
+
+  var that = this;
+  // this iterates over every bit in a hash string 
+  // callback takes the bit and its index in the string
+  eachBit(msgHash, function(bit, bitIdx) {
+    signature.push( that._privKey[bitIdx][bit] );
+  });
+  return signature;
+};
+</code></pre>
+
+<p>But wait, if we publish the numbers in our private key, doesn't that defeat the purpose of making it private? </p>
+
+<p>Well yes, and this highlights the usability weakness of this signature scheme: we can only use each keypair once. The workaround for this is to incorporate multiple keys into a Merkle tree, but that's a topic for a later <a href="http://blog.sunnyg.io/2014/12/13/merkle-key-trees-and-signature-scheme/">post</a>.</p>
+
+<h3 id="messageverification">Message Verification</h3>
+
+<p>To verify the message, all we need to do now is check to see that every number in our signature hashes to one of the values in its corresponding pair in our public key:</p>
+
+<pre><code>LamportKeypair.prototype.verify = function(msg, signature) {
+  var msgHash = hash(msg);
+  var authentic = true;
+
+  var that = this;
+  eachBit(msgHash, function(bit, bitIdx) {
+    if (hash(signature[bitIdx]) !== that.pubKey[bitIdx][bit]) {
+      authentic = false;
+    }
+  });
+  return authentic;
+};
+</code></pre>
+
+<hr>
+
+<h3 id="whythisworks">Why This Works</h3>
+
+<p>To be a valid digital signature algorithm, we have to satisfy one main condition (and maybe a few others that I'm forgetting): <em>the public key cannot leak any information about the private key</em>. Since our public key only contains the hashes of these random numbers (and since hash functions can't be run in reverse, that is, from a hash tell us the input), we satisfy that condition and can now know with certainty one thing: <strong>the only person who could have published the numbers in the signature and the hashes in the public key is the same person who possessed all of the random numbers of the private key in the first place.</strong></p>
+
+<p>I hope this post has piqued your interest in non-traditional encryption schemes; I have a <a href="http://blog.sunnyg.io/2014/12/13/merkle-key-trees-and-signature-scheme/">companion post</a> about how Merkle trees can mitigate the one-time-expiry property of Lamport signatures. If you want to check out my repo, you can find it (and star it hopefully?) <a href="https://github.com/sunny-g/lamport-merkle.js">here</a>. Thanks for reading!</p>
+        </section>
+
+        <footer class="post-footer">
+
+
+            <figure class="author-image">
+                <a class="img" href="../../../../author/sunny/" style="background-image: url(http://www.gravatar.com/avatar/1700de0def81fad9d8987101ee6704d6?s=250&amp;d=mm&amp;r=x)"><span class="hidden">Sunny G's Picture</span></a>
+            </figure>
+
+            <section class="author">
+                <h4><a href="../../../../author/sunny/">Sunny G</a></h4>
+
+                    <p>Read <a href="../../../../author/sunny/">more posts</a> by this author.</p>
+                <div class="author-meta">
+                    <span class="author-location icon-location">San Francisco</span>
+                    <span class="author-link icon-link"><a href="http://blog.sunnyg.io">http://blog.sunnyg.io</a></span>
+                </div>
+            </section>
+
+
+            <section class="share">
+                <h4>Share this post</h4>
+                <a class="icon-twitter" href="https://twitter.com/intent/tweet?text=Quantum%20Computer-Proof%20Digital%20Signatures%2C%20Part%201&amp;url=http://localhost:2368/2014/12/07/lamport-key-pairs-and-signature-scheme/" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                    <span class="hidden">Twitter</span>
+                </a>
+                <a class="icon-facebook" href="https://www.facebook.com/sharer/sharer.php?u=http://localhost:2368/2014/12/07/lamport-key-pairs-and-signature-scheme/" onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                    <span class="hidden">Facebook</span>
+                </a>
+                <a class="icon-google-plus" href="https://plus.google.com/share?url=http://localhost:2368/2014/12/07/lamport-key-pairs-and-signature-scheme/" onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                    <span class="hidden">Google+</span>
+                </a>
+            </section>
+
+        </footer>
+
+    </article>
+</main>
+
+<aside class="read-next">
+    <a class="read-next-story no-cover" href="../../12/merkle-key-trees-and-signature-scheme/">
+        <section class="post">
+            <h2>Quantum Computer-Proof Digital Signatures, Part 2</h2>
+            <p>In my previous post, I went over my implementation of a quantum-computer-proof digital signature algorithm known as the Lamport…</p>
+        </section>
+    </a>
+    <a class="read-next-story prev no-cover" href="../../../11/19/the-bind-function/">
+        <section class="post">
+            <h2>JavaScript's Bind Function</h2>
+            <p>Today I'll be walking through my simple, less robust reimplentation of Function.prototype.bind() which, along with apply() and…</p>
+        </section>
+    </a>
+</aside>
+
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'sunnygblog';
+    var disqus_identifier = '';
+ 
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a> 
+
+
+
+        <footer class="site-footer clearfix">
+            <section class="copyright"><a href="../../../../">Mindful Ramblings</a> © 2015</section>
+            <section class="poweredby">Proudly published with <a href="https://ghost.org">Ghost</a></section>
+        </footer>
+
+    </div>
+
+    
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="../../../../assets/js/jquery.fitvids.js?v=0266bdede6"></script>
+    <script type="text/javascript" src="../../../../assets/js/index.js?v=0266bdede6"></script>
+
+</body>
