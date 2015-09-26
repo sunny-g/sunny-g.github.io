@@ -11,7 +11,7 @@
 
     <link rel="shortcut icon" href="../../../../favicon.ico">
 
-    <link rel="stylesheet" type="text/css" href="../../../../assets/css/screen.css?v=9c681162a0">
+    <link rel="stylesheet" type="text/css" href="../../../../assets/css/screen.css?v=f4f3d2829c">
     <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Merriweather:300,700,700italic,300italic%7COpen+Sans:700,400">
 
     <link rel="canonical" href="index.html">
@@ -23,7 +23,7 @@
     <meta property="og:description" content="Github Pages is a static site host on Github for hosting simple blogs for developers or landing pages for their open-source projects. Ghost is &quot;just a blogging platform&quot; that's open source and is known for being extremely easy to use...">
     <meta property="og:url" content="http://localhost:2368/2015/09/24/ghost-with-github/">
     <meta property="article:published_time" content="2015-09-24T23:32:34.730Z">
-    <meta property="article:modified_time" content="2015-09-26T16:49:02.942Z">
+    <meta property="article:modified_time" content="2015-09-26T17:09:29.726Z">
     <meta property="article:tag" content="ghost">
     <meta property="article:tag" content="github">
     <meta property="article:tag" content="disqus">
@@ -50,7 +50,7 @@
     "headline": "Setting up a Ghost Blog with Github Pages",
     "url": "http://localhost:2368/2015/09/24/ghost-with-github/",
     "datePublished": "2015-09-24T23:32:34.730Z",
-    "dateModified": "2015-09-26T16:49:02.942Z",
+    "dateModified": "2015-09-26T17:09:29.726Z",
     "keywords": "ghost, github, disqus, blog",
     "description": "Github Pages is a static site host on Github for hosting simple blogs for developers or landing pages for their open-source projects. Ghost is &quot;just a blogging platform&quot; that&#x27;s open source and is known for being extremely easy to use..."
 }
@@ -112,9 +112,9 @@ add disqus
 * add disqus to post.hbs in your theme folder
 -->
 
-<p><a href="https://pages.github.com/">Github Pages</a> is a static site host on <a href="https://github.com/">Github</a> for hosting simple blogs for developers or landing pages for their open-source projects. <a href="https://ghost.org/">Ghost</a> is "just a blogging platform" that's open source and is known for being extremely easy to use that is also beautiful out-of-the-box. It's very similar to <a href="index.html">Jekyll</a>, a Ruby-based static site generator that Github Pages uses <a href="https://jekyllrb.com/docs/github-pages/">behind the scenes</a>, except that Ghost is written in <a href="https://nodejs.org/en/">Node.js</a> and was started as a <a href="https://www.kickstarter.com/projects/johnonolan/ghost-just-a-blogging-platform/description">Kickstarter project</a>.</p>
+<p><a href="https://pages.github.com/">Github Pages</a> is a static site host on <a href="https://github.com/">Github</a> for hosting simple blogs for developers or landing pages for their open-source projects. <a href="https://ghost.org/">Ghost</a> is "just a blogging platform" that's open source and is known for being extremely easy to use while also being beautiful out-of-the-box. It's very similar to <a href="https://jekyllrb.com/">Jekyll</a> - a Ruby-based static site generator that Github Pages uses <a href="https://jekyllrb.com/docs/github-pages/">behind the scenes</a> - except that Ghost is written in JavaScript and was started as a <a href="https://www.kickstarter.com/projects/johnonolan/ghost-just-a-blogging-platform/description">Kickstarter project</a>.</p>
 
-<p>This blog post (built with Ghost and hosted on <a href="http://sunny-g.github.io">my Github Pages blog</a>) will guide you through the process of publishing your own personal blog hosted by Github for free! The general idea behind this process is to let <a href="https://github.com/axitkhurana/buster">Buster</a> generate a static HTML and CSS version of your locally-running Ghost blog server, publish the files to a Github repo, and then 1-20 minutes later you enjoy your blog, which pulls the pages from that repo and serves them on the default URL of <a href="http://sunny-g.github.io">[your-github-username].github.io</a>!</p>
+<p>This blog post (built with Ghost and hosted on <a href="http://sunny-g.github.io">my Github Pages blog</a>) will guide you through the process of publishing your own personal blog hosted by Github for free! The general idea behind this process is to let <a href="https://github.com/axitkhurana/buster">Buster</a> generate a static HTML and CSS version of your locally-running Ghost blog server, publish the files to a Github repo, and then 1-20 minutes later you enjoy your blog, which pulls the pages from that repo and serves them on the default URL of <a href="http://sunny-g.github.io">[your-github-username].github.io</a>! </p>
 
 <h4 id="installdependenciesbusterandghost">Install Dependencies, <code>buster</code> and Ghost</h4>
 
@@ -123,7 +123,7 @@ add disqus
 <pre><code>$ mkdir ~/Dropbox/blog
 </code></pre>
 
-<p>Then you'll need to make sure you have both <a href="https://nodejs.org/en/">Node.js</a> and <a href="https://www.python.org/">Python</a> installed to run the Ghost server and Buster. Apple Macs should have Python installed by default and I prefer using <a href="https://github.com/creationix/nvm">nvm</a> and <a href="http://brew.sh/">homebrew</a> to install Node.js and <a href="https://www.npmjs.com/">npm</a>. If you need to install Node.js and npm, I recommend following this <a href="http://www.codydaig.me/installing-node-with-nvm/">simple guide</a> that uses homebrew to install nvm, which will let you manage multiple Node.js and npm versions easily.</p>
+<p>Then you'll need to make sure you have both <a href="https://nodejs.org/en/">Node.js</a> and <a href="https://www.python.org/">Python</a> installed to run the Ghost server and Buster. Apple Macs should have Python installed by default and I prefer using <a href="https://github.com/creationix/nvm">nvm</a> to install Node.js and <a href="https://www.npmjs.com/">npm</a>. If you need to install Node.js and npm, <strong>I highly recommend</strong> following this <a href="http://www.codydaig.me/installing-node-with-nvm/">simple guide</a> which uses <a href="http://brew.sh/">homebrew</a> (an OS X package manager) to install nvm, which will  then let you manage multiple versions of Node.js and npm very easily.</p>
 
 <p>We'll also need a tool called <a href="http://www.gnu.org/software/wget/">wget</a> that's used to retrieve content from web servers, and we'll also install it using homebrew:  </p>
 
@@ -131,18 +131,18 @@ add disqus
 $ brew install wget
 </code></pre>
 
-<p>Next comes installing Buster and Ghost; installing Buster is as simple as:  </p>
+<p>Next, we'll have to install Buster and Ghost; if you have <code>pip</code> (a Python package manager), installing Buster is as simple as:  </p>
 
 <pre><code class="language-sh"># go to your blog's directory
 $ cd ~/Dropbox/blog
 
-# if you don't have already have pip (for installing python packages)
+# if you don't have already have pip
 $ sudo easy_install pip
 
 $ sudo pip install buster
 </code></pre>
 
-<p>while this is the easiest way to install and start your local Ghost server I know of:  </p>
+<p>while this is the easiest way I know of to install and start your local Ghost server:  </p>
 
 <pre><code class="language-sh">$ wget https://ghost.org/zip/ghost-0.7.0.zip
 $ unzip ghost-0.7.0.zip -d ghost
@@ -255,7 +255,7 @@ $ buster deploy
 </script>
 
     <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
-    <script type="text/javascript" src="../../../../assets/js/jquery.fitvids.js?v=9c681162a0"></script>
-    <script type="text/javascript" src="../../../../assets/js/index.js?v=9c681162a0"></script>
+    <script type="text/javascript" src="../../../../assets/js/jquery.fitvids.js?v=f4f3d2829c"></script>
+    <script type="text/javascript" src="../../../../assets/js/index.js?v=f4f3d2829c"></script>
 
 </body>
