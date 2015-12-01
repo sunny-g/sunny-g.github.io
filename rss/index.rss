@@ -1,5 +1,36 @@
-<rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" version="2.0"><channel><title>Mindful Ramblings</title><description>My journey as a software engineer.</description><link>http://localhost:2368/</link><generator>Ghost 0.7</generator><lastBuildDate>Sat, 26 Sep 2015 17:09:48 GMT</lastBuildDate><atom:link href="http://localhost:2368/rss/" rel="self" type="application/rss+xml"/><ttl>60</ttl><item><title>Setting up a Ghost Blog with Github Pages</title><description>&lt;!--  
+<rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" version="2.0"><channel><title>Mindful Ramblings</title><description>My journey as a software engineer.</description><link>http://localhost:2368/</link><generator>Ghost 0.7</generator><lastBuildDate>Tue, 01 Dec 2015 01:16:50 GMT</lastBuildDate><atom:link href="http://localhost:2368/rss/" rel="self" type="application/rss+xml"/><ttl>60</ttl><item><title>Developing NPM packages for React Native</title><description>&lt;p&gt;I'll keep this short: there are a few ways you could potentially develop NPM packages to be used with React Native that I'm aware of:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;develop them in some folder, use symbolic links to include them in the &lt;code&gt;node_modules&lt;/code&gt; folder of your React Native app (won't work because &lt;code&gt;Watchman&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;</description><link>http://localhost:2368/2015/11/30/developing-node_modules-for-react-native/</link><guid isPermaLink="false">0e17b393-5477-4cb0-b53e-aa1c4db1c333</guid><dc:creator>Sunny G</dc:creator><pubDate>Tue, 01 Dec 2015 01:16:36 GMT</pubDate><content:encoded>&lt;p&gt;I'll keep this short: there are a few ways you could potentially develop NPM packages to be used with React Native that I'm aware of:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;develop them in some folder, use symbolic links to include them in the &lt;code&gt;node_modules&lt;/code&gt; folder of your React Native app (won't work because &lt;code&gt;Watchman&lt;/code&gt; doesn't use scan relative links)&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;develop them in some folder, then use &lt;code&gt;npm link&lt;/code&gt; to include the packages in your app (won't work because &lt;code&gt;npm link&lt;/code&gt; uses symbolic links underneath the hood, and will fail for the aforementioned reason)&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;develop them in some folder, set up relative install directories in your &lt;code&gt;package.json&lt;/code&gt; and for every change to your package you want to test, run in your React Native app directory &lt;code&gt;rm -rm node_modules &amp;amp;&amp;amp; npm i &amp;amp;&amp;amp; npm start&lt;/code&gt;; &lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;after running &lt;code&gt;react-native init&lt;/code&gt;, go to the file &lt;code&gt;node_modules/react-native/packager/react-packager/src/FileWatcher/index.js&lt;/code&gt; and edit line 70 like this:&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code class="language-js"&gt;isWatchman() {  
+  return detectingWatcherClass.then(
+    Watcher =&amp;gt; false    // line 70
+    // used to be:
+    // Watcher =&amp;gt; Watcher === sane.WatchmanWatcher
+  );
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Not exactly sure how/why it works (I have since lost the blog post/Github issue that I got this from), but this last option tells &lt;code&gt;Watchman&lt;/code&gt; to scan our &lt;code&gt;node_modules&lt;/code&gt; folder for any changes and live-reload when any of them changes. &lt;/p&gt;
+
+&lt;p&gt;So to write your NPM packages, develop them in a folder in your React Native app's &lt;code&gt;node_modules&lt;/code&gt; folder and add the relative NPM package path to your &lt;code&gt;package.json&lt;/code&gt; file under &lt;code&gt;"dependencies"&lt;/code&gt;: &lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;"any-db-client": "file:./node_modules/any-db-client",
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And that's it! When you're done developing the NPM package, publish it to NPM, move your package's folder to another location, change your &lt;code&gt;package.json&lt;/code&gt; to reflect installation from NPM, and enjoy! If you know of a better, more maintainable way of accomplishing the same goal, please let me know in the comments below!&lt;/p&gt;</content:encoded></item><item><title>Setting up a Ghost Blog with Github Pages</title><description>&lt;!--  
 ** check url changing in config.js **
+
+** other links **
+- http://joshgerdes.com/host-a-static-ghost-blog-on-github/
 
 steps:  
 add disqus  
@@ -10,6 +41,9 @@ add disqus
 &lt;p&gt;&lt;a href="https://pages.github.com/"&gt;Github Pages&lt;/a&gt; is a static site host on &lt;a href="https://github.com/"&gt;Github&lt;/a&gt; for hosting simple blogs for developers or landing pages for their open-source projects. &lt;a href="https://ghost.org/"&gt;Ghost&lt;/a&gt; is "just a blogging platform" that's open source and is known for being extremely easy to use while also being beautiful out-of-the-box. It's very similar to &lt;a href="https://jekyllrb.com/"&gt;Jekyll&lt;/a&gt;&lt;/p&gt;</description><link>http://localhost:2368/2015/09/24/ghost-with-github/</link><guid isPermaLink="false">02120703-6ba6-4149-8b7c-09f0636efd86</guid><category>ghost</category><category>github</category><category>disqus</category><category>blog</category><dc:creator>Sunny G</dc:creator><pubDate>Thu, 24 Sep 2015 23:32:34 GMT</pubDate><content:encoded>&lt;!--  
 ** check url changing in config.js **
 
+** other links **
+- http://joshgerdes.com/host-a-static-ghost-blog-on-github/
+
 steps:  
 add disqus  
 * set up disqus (with photos)
@@ -18,7 +52,7 @@ add disqus
 
 &lt;p&gt;&lt;a href="https://pages.github.com/"&gt;Github Pages&lt;/a&gt; is a static site host on &lt;a href="https://github.com/"&gt;Github&lt;/a&gt; for hosting simple blogs for developers or landing pages for their open-source projects. &lt;a href="https://ghost.org/"&gt;Ghost&lt;/a&gt; is "just a blogging platform" that's open source and is known for being extremely easy to use while also being beautiful out-of-the-box. It's very similar to &lt;a href="https://jekyllrb.com/"&gt;Jekyll&lt;/a&gt; - a Ruby-based static site generator that Github Pages uses &lt;a href="https://jekyllrb.com/docs/github-pages/"&gt;behind the scenes&lt;/a&gt; - except that Ghost is written in JavaScript and was started as a &lt;a href="https://www.kickstarter.com/projects/johnonolan/ghost-just-a-blogging-platform/description"&gt;Kickstarter project&lt;/a&gt;.&lt;/p&gt;
 
-&lt;p&gt;This blog post (built with Ghost and hosted on &lt;a href="http://sunny-g.github.io"&gt;my Github Pages blog&lt;/a&gt;) will guide you through the process of publishing your own personal blog hosted by Github for free! The general idea behind this process is to let &lt;a href="https://github.com/axitkhurana/buster"&gt;Buster&lt;/a&gt; generate a static HTML and CSS version of your locally-running Ghost blog server, publish the files to a Github repo, and then 1-20 minutes later you enjoy your blog, which pulls the pages from that repo and serves them on the default URL of &lt;a href="http://sunny-g.github.io"&gt;[your-github-username].github.io&lt;/a&gt;! &lt;/p&gt;
+&lt;p&gt;This blog post (built with Ghost and hosted on &lt;a href="http://blog.sunnyg.io"&gt;my Github Pages blog&lt;/a&gt;) will guide you through the process of publishing your own personal blog hosted by Github for free! The general idea behind this process is to let &lt;a href="https://github.com/axitkhurana/buster"&gt;Buster&lt;/a&gt; generate a static HTML and CSS version of your locally-running Ghost blog server, publish the files to a Github repo, and then 1-20 minutes later you enjoy your blog, which pulls the pages from that repo and serves them on the default URL of &lt;a href="http://sunny-g.github.io"&gt;[your-github-username].github.io&lt;/a&gt;! &lt;/p&gt;
 
 &lt;h4 id="installdependenciesbusterandghost"&gt;Install Dependencies, &lt;code&gt;buster&lt;/code&gt; and Ghost&lt;/h4&gt;
 
@@ -79,7 +113,7 @@ $ buster deploy
 
 &lt;p&gt;Once it's been deployed and you're done making changes to your blog, hit &lt;code&gt;Ctrl-C&lt;/code&gt; from within the Ghost server tab to shut down the server.&lt;/p&gt;
 
-&lt;p&gt;And that's it! You can check out my Github Pages-hosted Ghost blog at &lt;a href="http://sunny-g.github.io"&gt;http://sunny-g.github.io&lt;/a&gt;. If you have any questions, feel free to reach out to me and thanks for reading!&lt;/p&gt;</content:encoded></item><item><title>Introduction to Flux and Angular Integration</title><description>&lt;p&gt;For my group's thesis project at &lt;a href="http://www.hackreactor.com"&gt;Hack Reactor&lt;/a&gt;, our client is having us design a vendor app for taking and processing drink orders at bars to accompany the app they have already built for end-users. The existing app is our model for the vendor app and employed an interesting design&lt;/p&gt;</description><link>http://localhost:2368/2014/12/30/flux-and-angular/</link><guid isPermaLink="false">e5d947db-fcaa-4826-a728-bf921bcdaf55</guid><category>angularjs</category><category>flux</category><category>facebook flux</category><category>google angular</category><category>flux-angular</category><dc:creator>Sunny G</dc:creator><pubDate>Tue, 30 Dec 2014 19:33:28 GMT</pubDate><content:encoded>&lt;p&gt;For my group's thesis project at &lt;a href="http://www.hackreactor.com"&gt;Hack Reactor&lt;/a&gt;, our client is having us design a vendor app for taking and processing drink orders at bars to accompany the app they have already built for end-users. The existing app is our model for the vendor app and employed an interesting design choice: the combined use of Facebook's &lt;a href="https://facebook.github.io/flux/"&gt;Flux&lt;/a&gt; and Google's &lt;a href="https://angularjs.org/"&gt;AngularJS&lt;/a&gt;. While I'm no expert at either technology, I'm going to elaborate on this integration and how our library of choice, &lt;a href="https://github.com/christianalfoni/flux-angular"&gt;flux-angular&lt;/a&gt;, handles this unique combination. &lt;/p&gt;
+&lt;p&gt;And that's it! You can check out my Github Pages-hosted Ghost blog at &lt;a href="http://blog.sunnyg.io"&gt;http://blog.sunnyg.io&lt;/a&gt;. If you have any questions, feel free to reach out to me and thanks for reading!&lt;/p&gt;</content:encoded></item><item><title>Introduction to Flux and Angular Integration</title><description>&lt;p&gt;For my group's thesis project at &lt;a href="http://www.hackreactor.com"&gt;Hack Reactor&lt;/a&gt;, our client is having us design a vendor app for taking and processing drink orders at bars to accompany the app they have already built for end-users. The existing app is our model for the vendor app and employed an interesting design&lt;/p&gt;</description><link>http://localhost:2368/2014/12/30/flux-and-angular/</link><guid isPermaLink="false">e5d947db-fcaa-4826-a728-bf921bcdaf55</guid><category>angularjs</category><category>flux</category><category>facebook flux</category><category>google angular</category><category>flux-angular</category><dc:creator>Sunny G</dc:creator><pubDate>Tue, 30 Dec 2014 19:33:28 GMT</pubDate><content:encoded>&lt;p&gt;For my group's thesis project at &lt;a href="http://www.hackreactor.com"&gt;Hack Reactor&lt;/a&gt;, our client is having us design a vendor app for taking and processing drink orders at bars to accompany the app they have already built for end-users. The existing app is our model for the vendor app and employed an interesting design choice: the combined use of Facebook's &lt;a href="https://facebook.github.io/flux/"&gt;Flux&lt;/a&gt; and Google's &lt;a href="https://angularjs.org/"&gt;AngularJS&lt;/a&gt;. While I'm no expert at either technology, I'm going to elaborate on this integration and how our library of choice, &lt;a href="https://github.com/christianalfoni/flux-angular"&gt;flux-angular&lt;/a&gt;, handles this unique combination. &lt;/p&gt;
 
 &lt;h4 id="whatisflux"&gt;What is Flux?&lt;/h4&gt;
 
