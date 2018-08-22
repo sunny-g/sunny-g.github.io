@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>Setting up a Ghost Blog with Github Pages</title>
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" type="text/css" href="/assets/built/screen.css?v=92a4866358" />
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="canonical" href="http://localhost:2368/2015/09/24/ghost-with-github/" />
+    <meta name="referrer" content="no-referrer-when-downgrade" />
+    <link rel="amphtml" href="http://localhost:2368/2015/09/24/ghost-with-github/amp/" />
+    
+    <meta property="og:site_name" content="Mindful Ramblings" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Setting up a Ghost Blog with Github Pages" />
+    <meta property="og:description" content="Github Pages is a static site host on Github for hosting simple blogs for developers or landing pages for their open-source projects. Ghost is &amp;quot;just a blogging platform&amp;quot; that&#x27;s open source and is known for being extremely easy to use while also being beautiful out-of-the-box. It&#x27;s very similar" />
+    <meta property="og:url" content="http://localhost:2368/2015/09/24/ghost-with-github/" />
+    <meta property="article:published_time" content="2015-09-24T23:32:34.000Z" />
+    <meta property="article:modified_time" content="2015-10-19T15:45:34.000Z" />
+    <meta property="article:tag" content="github" />
+    <meta property="article:tag" content="ghost" />
+    <meta property="article:tag" content="disqus" />
+    <meta property="article:tag" content="blog" />
+    
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Setting up a Ghost Blog with Github Pages" />
+    <meta name="twitter:description" content="Github Pages is a static site host on Github for hosting simple blogs for developers or landing pages for their open-source projects. Ghost is &amp;quot;just a blogging platform&amp;quot; that&#x27;s open source and is known for being extremely easy to use while also being beautiful out-of-the-box. It&#x27;s very similar" />
+    <meta name="twitter:url" content="http://localhost:2368/2015/09/24/ghost-with-github/" />
+    <meta name="twitter:label1" content="Written by" />
+    <meta name="twitter:data1" content="Sunny G" />
+    <meta name="twitter:label2" content="Filed under" />
+    <meta name="twitter:data2" content="github, ghost, disqus, blog" />
+    <meta name="twitter:site" content="@sunny_gonna" />
+    
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "publisher": {
+        "@type": "Organization",
+        "name": "Mindful Ramblings",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "http://localhost:2368/favicon.ico",
+            "width": 60,
+            "height": 60
+        }
+    },
+    "author": {
+        "@type": "Person",
+        "name": "Sunny G",
+        "image": {
+            "@type": "ImageObject",
+            "url": "//www.gravatar.com/avatar/1700de0def81fad9d8987101ee6704d6?s=250&d=mm&r=x",
+            "width": 250,
+            "height": 250
+        },
+        "url": "http://localhost:2368/author/sunny/",
+        "sameAs": []
+    },
+    "headline": "Setting up a Ghost Blog with Github Pages",
+    "url": "http://localhost:2368/2015/09/24/ghost-with-github/",
+    "datePublished": "2015-09-24T23:32:34.000Z",
+    "dateModified": "2015-10-19T15:45:34.000Z",
+    "keywords": "github, ghost, disqus, blog",
+    "description": "Github Pages is a static site host on Github for hosting simple blogs for developers or landing pages for their open-source projects. Ghost is &amp;quot;just a blogging platform&amp;quot; that&#x27;s open source and is known for being extremely easy to use while also being beautiful out-of-the-box. It&#x27;s very similar",
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "http://localhost:2368/"
+    }
+}
+    </script>
+
+    <script src="/public/ghost-sdk.js?v=92a4866358"></script>
+<script>
+ghost.init({
+	clientId: "ghost-frontend",
+	clientSecret: "ee7e921e7c80"
+});
+</script>
+    <meta name="generator" content="Ghost 1.25" />
+    <link rel="alternate" type="application/rss+xml" title="Mindful Ramblings" href="http://localhost:2368/rss/" />
+
+</head>
+<body class="post-template tag-github tag-ghost-tag tag-disqus tag-blog">
+
+    <div class="site-wrapper">
+
+        
+
+<header class="site-header outer">
+    <div class="inner">
+        <nav class="site-nav">
+    <div class="site-nav-left">
+                <a class="site-nav-logo" href="http://localhost:2368">Mindful Ramblings</a>
+            <ul class="nav" role="menu">
+    <li class="nav-home" role="menuitem"><a href="http://localhost:2368/">Home</a></li>
+</ul>
+
+    </div>
+    <div class="site-nav-right">
+        <div class="social-links">
+                <a class="social-link social-link-tw" href="https://twitter.com/sunny_gonna" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M30.063 7.313c-.813 1.125-1.75 2.125-2.875 2.938v.75c0 1.563-.188 3.125-.688 4.625a15.088 15.088 0 0 1-2.063 4.438c-.875 1.438-2 2.688-3.25 3.813a15.015 15.015 0 0 1-4.625 2.563c-1.813.688-3.75 1-5.75 1-3.25 0-6.188-.875-8.875-2.625.438.063.875.125 1.375.125 2.688 0 5.063-.875 7.188-2.5-1.25 0-2.375-.375-3.375-1.125s-1.688-1.688-2.063-2.875c.438.063.813.125 1.125.125.5 0 1-.063 1.5-.25-1.313-.25-2.438-.938-3.313-1.938a5.673 5.673 0 0 1-1.313-3.688v-.063c.813.438 1.688.688 2.625.688a5.228 5.228 0 0 1-1.875-2c-.5-.875-.688-1.813-.688-2.75 0-1.063.25-2.063.75-2.938 1.438 1.75 3.188 3.188 5.25 4.25s4.313 1.688 6.688 1.813a5.579 5.579 0 0 1 1.5-5.438c1.125-1.125 2.5-1.688 4.125-1.688s3.063.625 4.188 1.813a11.48 11.48 0 0 0 3.688-1.375c-.438 1.375-1.313 2.438-2.563 3.188 1.125-.125 2.188-.438 3.313-.875z"/></svg>
+</a>
+        </div>
+            <a class="rss-button" href="https://feedly.com/i/subscription/feed/http://localhost:2368/rss/" target="_blank" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="6.18" cy="17.82" r="2.18"/><path d="M4 4.44v2.83c7.03 0 12.73 5.7 12.73 12.73h2.83c0-8.59-6.97-15.56-15.56-15.56zm0 5.66v2.83c3.9 0 7.07 3.17 7.07 7.07h2.83c0-5.47-4.43-9.9-9.9-9.9z"/></svg>
+</a>
+    </div>
+</nav>
+    </div>
+</header>
+
+
+<main id="site-main" class="site-main outer">
+    <div class="inner">
+
+        <article class="post-full post tag-github tag-ghost-tag tag-disqus tag-blog no-image">
+
+            <header class="post-full-header">
+                <section class="post-full-meta">
+                    <time class="post-full-meta-date" datetime="2015-09-24">24 September 2015</time>
+                        <span class="date-divider">/</span> <a href="/tag/github/">github</a>
+                </section>
+                <h1 class="post-full-title">Setting up a Ghost Blog with Github Pages</h1>
+            </header>
+
+
+            <section class="post-full-content">
+                <div class="post-content">
+                    <div class="kg-card-markdown"><!--
+** check url changing in config.js **
+
+** other links **
+- http://joshgerdes.com/host-a-static-ghost-blog-on-github/
+
+steps:
+add disqus
+* set up disqus (with photos)
+* add disqus to post.hbs in your theme folder
+-->
+<p><a href="https://pages.github.com/">Github Pages</a> is a static site host on <a href="https://github.com/">Github</a> for hosting simple blogs for developers or landing pages for their open-source projects. <a href="https://ghost.org/">Ghost</a> is &quot;just a blogging platform&quot; that's open source and is known for being extremely easy to use while also being beautiful out-of-the-box. It's very similar to <a href="https://jekyllrb.com/">Jekyll</a> - a Ruby-based static site generator that Github Pages uses <a href="https://jekyllrb.com/docs/github-pages/">behind the scenes</a> - except that Ghost is written in JavaScript and was started as a <a href="https://www.kickstarter.com/projects/johnonolan/ghost-just-a-blogging-platform/description">Kickstarter project</a>.</p>
+<p>This blog post (built with Ghost and hosted on <a href="http://blog.sunnyg.io">my Github Pages blog</a>) will guide you through the process of publishing your own personal blog hosted by Github for free! The general idea behind this process is to let <a href="https://github.com/axitkhurana/buster">Buster</a> generate a static HTML and CSS version of your locally-running Ghost blog server, publish the files to a Github repo, and then 1-20 minutes later you enjoy your blog, which pulls the pages from that repo and serves them on the default URL of <a href="http://sunny-g.github.io">[your-github-username].github.io</a>!</p>
+<h4 id="installdependenciesbusterandghost">Install Dependencies, <code>buster</code> and Ghost</h4>
+<p>First, you must create a folder to hold your Ghost files and static files. I chose to do this in my <a href="https://www.dropbox.com/">Dropbox</a> folder, as I'll explain later.</p>
+<pre><code>$ mkdir ~/Dropbox/blog
+</code></pre>
+<p>Then you'll need to make sure you have both <a href="https://nodejs.org/en/">Node.js</a> and <a href="https://www.python.org/">Python</a> installed to run the Ghost server and Buster. Apple Macs should have Python installed by default and I prefer using <a href="https://github.com/creationix/nvm">nvm</a> to install Node.js and <a href="https://www.npmjs.com/">npm</a>. If you need to install Node.js and npm, <strong>I highly recommend</strong> following this <a href="http://www.codydaig.me/installing-node-with-nvm/">simple guide</a> which uses <a href="http://brew.sh/">homebrew</a> (an OS X package manager) to install nvm, which will  then let you manage multiple versions of Node.js and npm very easily.</p>
+<p>We'll also need a tool called <a href="http://www.gnu.org/software/wget/">wget</a> that's used to retrieve content from web servers, and we'll also install it using homebrew:</p>
+<pre><code class="language-sh">$ brew update
+$ brew install wget
+</code></pre>
+<p>Next, we'll have to install Buster and Ghost; if you have <code>pip</code> (a Python package manager), installing Buster is as simple as:</p>
+<pre><code class="language-sh"># go to your blog's directory
+$ cd ~/Dropbox/blog
+
+# if you don't have already have pip
+$ sudo easy_install pip
+
+$ sudo pip install buster
+</code></pre>
+<p>while this is the easiest way I know of to install and start your local Ghost server:</p>
+<pre><code class="language-sh">$ wget https://ghost.org/zip/ghost-0.7.0.zip
+$ unzip ghost-0.7.0.zip -d ghost
+$ cd ghost
+$ npm install --production
+$ npm start
+</code></pre>
+<p><code>npm start</code> starts the Node.js server that will serve up the admin interface for your blog at <code>http://localhost:2368/ghost</code>. This is where you'll create an admin account for managing your local blog posts, settings and themes and also where you'll create and edit your blog posts using Ghost's fancy side-by-side Markdown editor.</p>
+<h4 id="generatingthestaticfilesforyourblogsrepo">Generating the static files for your blog's repo</h4>
+<p>The next thing you'll want to do is create a repo for your static blog. On Github, create a new repo whose name is <code>[your-username].github.io</code>. The repo's name must be <code>[your-username].github.io</code>, otherwise Github won't know to create a site at that URL from that repo.</p>
+<p>Once it's been created, lets start our Ghost server, create a new tab in our terminal and use <code>buster</code> to create our blog's repo and its static files:</p>
+<pre><code># (in a new tab) get back to the blog folder
+$ cd ~/Dropbox/blog
+$ buster setup --gh-repo=\
+&quot;https://github.com/&lt;username&gt;/&lt;username&gt;.github.io.git&quot;
+$ buster generate
+$ buster deploy
+</code></pre>
+<p>This will create a local repo in the folder named <code>static</code> who's remote is the URL to the Github repo you just created. <code>buster generate</code> will create all of the appropriate directories, HTML pages and links for your entire Ghost blog within that folder. The last command, <code>buster deploy</code>, adds, commits and pushes the changes you generated up to your blog's repo. And that's it! Github Pages can take as much as 20 minutes to update, but it often happens much sooner.</p>
+<p>Every time you need make a change to your blog, whether by changing a theme or adding/editing a post, just run <code>npm start</code> within the <code>blog/ghost/</code> folder and call <code>buster generate</code> from your <code>blog</code> folder to recreate the appropriate static files. All you have to do now to re-deploy your the latest version of your blog is <code>buster deploy</code>!</p>
+<p>This is why I put <code>blog</code> in my Dropbox folder - edits can be made within the Ghost side-by-side Markdown editor on my main computer and will always be backed up without having to commit them to my blog's repo, and if I happen to be on my tablet or phone, I can just edit the raw Markdown.</p>
+<p>Once it's been deployed and you're done making changes to your blog, hit <code>Ctrl-C</code> from within the Ghost server tab to shut down the server.</p>
+<p>And that's it! You can check out my Github Pages-hosted Ghost blog at <a href="http://blog.sunnyg.io">http://blog.sunnyg.io</a>. If you have any questions, feel free to reach out to me and thanks for reading!</p>
+</div>
+                </div>
+            </section>
+
+
+            <footer class="post-full-footer">
+
+
+                    
+<section class="author-card">
+        <img class="author-profile-image" src="//www.gravatar.com/avatar/1700de0def81fad9d8987101ee6704d6?s&#x3D;250&amp;d&#x3D;mm&amp;r&#x3D;x" alt="Sunny G" />
+    <section class="author-card-content">
+        <h4 class="author-card-name"><a href="/author/sunny/">Sunny G</a></h4>
+            <p>Read <a href="/author/sunny/">more posts</a> by this author.</p>
+    </section>
+</section>
+<div class="post-full-footer-right">
+    <a class="author-card-button" href="/author/sunny/">Read More</a>
+</div>
+
+
+            </footer>
+
+
+        </article>
+
+    </div>
+</main>
+
+<aside class="read-next outer">
+    <div class="inner">
+        <div class="read-next-feed">
+
+                <article class="post-card post no-image">
+    <div class="post-card-content">
+        <a class="post-card-content-link" href="/2015/12/01/developing-node_modules-for-react-native/">
+            <header class="post-card-header">
+                <h2 class="post-card-title">Developing NPM packages for React Native</h2>
+            </header>
+            <section class="post-card-excerpt">
+                <p>I'll keep this short: there are a few ways you could potentially develop NPM packages to be used with React Native that I'm aware of: develop them in some folder, use symbolic links</p>
+            </section>
+        </a>
+        <footer class="post-card-meta">
+
+            <ul class="author-list">
+                <li class="author-list-item">
+
+                    <div class="author-name-tooltip">
+                        Sunny G
+                    </div>
+
+                        <a href="/author/sunny/" class="static-avatar"><img class="author-profile-image" src="//www.gravatar.com/avatar/1700de0def81fad9d8987101ee6704d6?s&#x3D;250&amp;d&#x3D;mm&amp;r&#x3D;x" alt="Sunny G" /></a>
+                </li>
+            </ul>
+
+            <span class="reading-time">1 min read</span>
+
+        </footer>
+    </div>
+</article>
+
+                <article class="post-card post tag-angularjs tag-flux tag-facebook-flux tag-google-angular tag-flux-angular no-image">
+    <div class="post-card-content">
+        <a class="post-card-content-link" href="/2014/12/30/flux-and-angular/">
+            <header class="post-card-header">
+                    <span class="post-card-tags">angularjs</span>
+                <h2 class="post-card-title">Introduction to Flux and Angular Integration</h2>
+            </header>
+            <section class="post-card-excerpt">
+                <p>For my group's thesis project at Hack Reactor, our client is having us design a vendor app for taking and processing drink orders at bars to accompany the app they have already built</p>
+            </section>
+        </a>
+        <footer class="post-card-meta">
+
+            <ul class="author-list">
+                <li class="author-list-item">
+
+                    <div class="author-name-tooltip">
+                        Sunny G
+                    </div>
+
+                        <a href="/author/sunny/" class="static-avatar"><img class="author-profile-image" src="//www.gravatar.com/avatar/1700de0def81fad9d8987101ee6704d6?s&#x3D;250&amp;d&#x3D;mm&amp;r&#x3D;x" alt="Sunny G" /></a>
+                </li>
+            </ul>
+
+            <span class="reading-time">2 min read</span>
+
+        </footer>
+    </div>
+</article>
+
+        </div>
+    </div>
+</aside>
+
+<div class="floating-header">
+    <div class="floating-header-logo">
+        <a href="http://localhost:2368">
+            <span>Mindful Ramblings</span>
+        </a>
+    </div>
+    <span class="floating-header-divider">&mdash;</span>
+    <div class="floating-header-title">Setting up a Ghost Blog with Github Pages</div>
+    <div class="floating-header-share">
+        <div class="floating-header-share-label">Share this <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M7.5 15.5V4a1.5 1.5 0 1 1 3 0v4.5h2a1 1 0 0 1 1 1h2a1 1 0 0 1 1 1H18a1.5 1.5 0 0 1 1.5 1.5v3.099c0 .929-.13 1.854-.385 2.748L17.5 23.5h-9c-1.5-2-5.417-8.673-5.417-8.673a1.2 1.2 0 0 1 1.76-1.605L7.5 15.5zm6-6v2m-3-3.5v3.5m6-1v2"/>
+</svg>
+</div>
+        <a class="floating-header-share-tw" href="https://twitter.com/share?text=Setting%20up%20a%20Ghost%20Blog%20with%20Github%20Pages&amp;url=http://localhost:2368/2015/09/24/ghost-with-github/"
+            onclick="window.open(this.href, 'share-twitter', 'width=550,height=235');return false;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M30.063 7.313c-.813 1.125-1.75 2.125-2.875 2.938v.75c0 1.563-.188 3.125-.688 4.625a15.088 15.088 0 0 1-2.063 4.438c-.875 1.438-2 2.688-3.25 3.813a15.015 15.015 0 0 1-4.625 2.563c-1.813.688-3.75 1-5.75 1-3.25 0-6.188-.875-8.875-2.625.438.063.875.125 1.375.125 2.688 0 5.063-.875 7.188-2.5-1.25 0-2.375-.375-3.375-1.125s-1.688-1.688-2.063-2.875c.438.063.813.125 1.125.125.5 0 1-.063 1.5-.25-1.313-.25-2.438-.938-3.313-1.938a5.673 5.673 0 0 1-1.313-3.688v-.063c.813.438 1.688.688 2.625.688a5.228 5.228 0 0 1-1.875-2c-.5-.875-.688-1.813-.688-2.75 0-1.063.25-2.063.75-2.938 1.438 1.75 3.188 3.188 5.25 4.25s4.313 1.688 6.688 1.813a5.579 5.579 0 0 1 1.5-5.438c1.125-1.125 2.5-1.688 4.125-1.688s3.063.625 4.188 1.813a11.48 11.48 0 0 0 3.688-1.375c-.438 1.375-1.313 2.438-2.563 3.188 1.125-.125 2.188-.438 3.313-.875z"/></svg>
+        </a>
+        <a class="floating-header-share-fb" href="https://www.facebook.com/sharer/sharer.php?u=http://localhost:2368/2015/09/24/ghost-with-github/"
+            onclick="window.open(this.href, 'share-facebook','width=580,height=296');return false;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M19 6h5V0h-5c-3.86 0-7 3.14-7 7v3H8v6h4v16h6V16h5l1-6h-6V7c0-.542.458-1 1-1z"/></svg>
+        </a>
+    </div>
+    <progress id="reading-progress" class="progress" value="0">
+        <div class="progress-container">
+            <span class="progress-bar"></span>
+        </div>
+    </progress>
+</div>
+
+
+
+
+        <footer class="site-footer outer">
+            <div class="site-footer-content inner">
+                <section class="copyright"><a href="http://localhost:2368">Mindful Ramblings</a> &copy; 2018</section>
+                <nav class="site-footer-nav">
+                    <a href="http://localhost:2368">Latest Posts</a>
+                    
+                    <a href="https://twitter.com/sunny_gonna" target="_blank" rel="noopener">Twitter</a>
+                    <a href="https://ghost.org" target="_blank" rel="noopener">Ghost</a>
+                </nav>
+            </div>
+        </footer>
+
+    </div>
+
+
+    <script
+        src="https://code.jquery.com/jquery-3.2.1.min.js"
+        integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous">
+    </script>
+    <script type="text/javascript" src="/assets/js/jquery.fitvids.js?v=92a4866358"></script>
+
+
+    <script>
+
+// NOTE: Scroll performance is poor in Safari
+// - this appears to be due to the events firing much more slowly in Safari.
+//   Dropping the scroll event and using only a raf loop results in smoother
+//   scrolling but continuous processing even when not scrolling
+$(document).ready(function () {
+    // Start fitVids
+    var $postContent = $(".post-full-content");
+    $postContent.fitVids();
+    // End fitVids
+
+    var progressBar = document.querySelector('#reading-progress');
+    var header = document.querySelector('.floating-header');
+    var title = document.querySelector('.post-full-title');
+
+    var lastScrollY = window.scrollY;
+    var lastWindowHeight = window.innerHeight;
+    var lastDocumentHeight = $(document).height();
+    var ticking = false;
+
+    function onScroll() {
+        lastScrollY = window.scrollY;
+        requestTick();
+    }
+
+    function onResize() {
+        lastWindowHeight = window.innerHeight;
+        lastDocumentHeight = $(document).height();
+        requestTick();
+    }
+
+    function requestTick() {
+        if (!ticking) {
+            requestAnimationFrame(update);
+        }
+        ticking = true;
+    }
+
+    function update() {
+        var trigger = title.getBoundingClientRect().top + window.scrollY;
+        var triggerOffset = title.offsetHeight + 35;
+        var progressMax = lastDocumentHeight - lastWindowHeight;
+
+        // show/hide floating header
+        if (lastScrollY >= trigger + triggerOffset) {
+            header.classList.add('floating-active');
+        } else {
+            header.classList.remove('floating-active');
+        }
+
+        progressBar.setAttribute('max', progressMax);
+        progressBar.setAttribute('value', lastScrollY);
+
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', onScroll, {passive: true});
+    window.addEventListener('resize', onResize, false);
+
+    update();
+
+});
+</script>
+
+
+    <script type="application/ld+json">
+{
+   	"@context": "http://schema.org",
+	"sample": "footer"
+}
+</script>
+
+</body>
+</html>

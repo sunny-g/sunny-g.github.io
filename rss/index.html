@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0" xmlns:media="http://search.yahoo.com/mrss/"><channel><title><![CDATA[Mindful Ramblings]]></title><description><![CDATA[My thoughts on JavaScript, cryptocurrency stuff, and random things in between]]></description><link>http://localhost:2368/</link><image><url>http://localhost:2368/favicon.png</url><title>Mindful Ramblings</title><link>http://localhost:2368/</link></image><generator>Ghost 1.25</generator><lastBuildDate>Wed, 22 Aug 2018 22:05:21 GMT</lastBuildDate><atom:link href="http://localhost:2368/rss/" rel="self" type="application/rss+xml"/><ttl>60</ttl><item><title><![CDATA[Developing NPM packages for React Native]]></title><description><![CDATA[<div class="kg-card-markdown"><p>I'll keep this short: there are a few ways you could potentially develop NPM packages to be used with React Native that I'm aware of:</p>
+<ol>
+<li>
+<p>develop them in some folder, use symbolic links to include them in the <code>node_modules</code> folder of your React Native app (won't work because <code>Watchman</code></p></li></ol></div>]]></description><link>http://localhost:2368/2015/12/01/developing-node_modules-for-react-native/</link><guid isPermaLink="false">5b7b9ad2af98ac27da31b801</guid><dc:creator><![CDATA[Sunny G]]></dc:creator><pubDate>Tue, 01 Dec 2015 01:16:36 GMT</pubDate><content:encoded><![CDATA[<div class="kg-card-markdown"><p>I'll keep this short: there are a few ways you could potentially develop NPM packages to be used with React Native that I'm aware of:</p>
+<ol>
+<li>
+<p>develop them in some folder, use symbolic links to include them in the <code>node_modules</code> folder of your React Native app (won't work because <code>Watchman</code> doesn't use scan relative links)</p>
+</li>
+<li>
+<p>develop them in some folder, then use <code>npm link</code> to include the packages in your app (won't work because <code>npm link</code> uses symbolic links underneath the hood, and will fail for the aforementioned reason)</p>
+</li>
+<li>
+<p>develop them in some folder, set up relative install directories in your <code>package.json</code> and for every change to your package you want to test, run in your React Native app directory <code>rm -rm node_modules &amp;&amp; npm i &amp;&amp; npm start</code>;</p>
+</li>
+<li>
+<p>after running <code>react-native init</code>, go to the file <code>node_modules/react-native/packager/react-packager/src/FileWatcher/index.js</code> and edit line 70 like this:</p>
+</li>
+</ol>
+<pre><code class="language-js">isWatchman() {
+  return detectingWatcherClass.then(
+    Watcher =&gt; false    // line 70
+    // used to be:
+    // Watcher =&gt; Watcher === sane.WatchmanWatcher
+  );
+}
+</code></pre>
+<p>Not exactly sure how/why it works (I have since lost the blog post/Github issue that I got this from), but this last option tells <code>Watchman</code> to scan our <code>node_modules</code> folder for any changes and live-reload when any of them changes.</p>
+<p>So to write your NPM packages, develop them in a folder in your React Native app's <code>node_modules</code> folder and add the relative NPM package path to your <code>package.json</code> file under <code>&quot;dependencies&quot;</code>:</p>
+<pre><code>&quot;any-db-client&quot;: &quot;file:./node_modules/any-db-client&quot;,
+</code></pre>
+<p>And that's it! When you're done developing the NPM package, publish it to NPM, move your package's folder to another location, change your <code>package.json</code> to reflect installation from NPM, and enjoy! If you know of a better, more maintainable way of accomplishing the same goal, please let me know in the comments below!</p>
+</div>]]></content:encoded></item><item><title><![CDATA[Setting up a Ghost Blog with Github Pages]]></title><description><![CDATA[<div class="kg-card-markdown"><!--
+** check url changing in config.js **
+
+** other links **
+- http://joshgerdes.com/host-a-static-ghost-blog-on-github/
+
+steps:
+add disqus
+* set up disqus (with photos)
+* add disqus to post.hbs in your theme folder
+-->
+<p><a href="https://pages.github.com/">Github Pages</a> is a static site host on <a href="https://github.com/">Github</a> for hosting simple blogs for developers or landing pages for their open-source projects. <a href="https://ghost.org/">Ghost</a> is &quot;just a blogging platform&quot; that's open source and is known for being extremely easy to use while also being beautiful out-of-the-box. It's very similar</p></div>]]></description><link>http://localhost:2368/2015/09/24/ghost-with-github/</link><guid isPermaLink="false">5b7b9ad2af98ac27da31b7ff</guid><category><![CDATA[github]]></category><category><![CDATA[ghost]]></category><category><![CDATA[disqus]]></category><category><![CDATA[blog]]></category><dc:creator><![CDATA[Sunny G]]></dc:creator><pubDate>Thu, 24 Sep 2015 23:32:34 GMT</pubDate><content:encoded><![CDATA[<div class="kg-card-markdown"><!--
+** check url changing in config.js **
+
+** other links **
+- http://joshgerdes.com/host-a-static-ghost-blog-on-github/
+
+steps:
+add disqus
+* set up disqus (with photos)
+* add disqus to post.hbs in your theme folder
+-->
+<p><a href="https://pages.github.com/">Github Pages</a> is a static site host on <a href="https://github.com/">Github</a> for hosting simple blogs for developers or landing pages for their open-source projects. <a href="https://ghost.org/">Ghost</a> is &quot;just a blogging platform&quot; that's open source and is known for being extremely easy to use while also being beautiful out-of-the-box. It's very similar to <a href="https://jekyllrb.com/">Jekyll</a> - a Ruby-based static site generator that Github Pages uses <a href="https://jekyllrb.com/docs/github-pages/">behind the scenes</a> - except that Ghost is written in JavaScript and was started as a <a href="https://www.kickstarter.com/projects/johnonolan/ghost-just-a-blogging-platform/description">Kickstarter project</a>.</p>
+<p>This blog post (built with Ghost and hosted on <a href="http://blog.sunnyg.io">my Github Pages blog</a>) will guide you through the process of publishing your own personal blog hosted by Github for free! The general idea behind this process is to let <a href="https://github.com/axitkhurana/buster">Buster</a> generate a static HTML and CSS version of your locally-running Ghost blog server, publish the files to a Github repo, and then 1-20 minutes later you enjoy your blog, which pulls the pages from that repo and serves them on the default URL of <a href="http://sunny-g.github.io">[your-github-username].github.io</a>!</p>
+<h4 id="installdependenciesbusterandghost">Install Dependencies, <code>buster</code> and Ghost</h4>
+<p>First, you must create a folder to hold your Ghost files and static files. I chose to do this in my <a href="https://www.dropbox.com/">Dropbox</a> folder, as I'll explain later.</p>
+<pre><code>$ mkdir ~/Dropbox/blog
+</code></pre>
+<p>Then you'll need to make sure you have both <a href="https://nodejs.org/en/">Node.js</a> and <a href="https://www.python.org/">Python</a> installed to run the Ghost server and Buster. Apple Macs should have Python installed by default and I prefer using <a href="https://github.com/creationix/nvm">nvm</a> to install Node.js and <a href="https://www.npmjs.com/">npm</a>. If you need to install Node.js and npm, <strong>I highly recommend</strong> following this <a href="http://www.codydaig.me/installing-node-with-nvm/">simple guide</a> which uses <a href="http://brew.sh/">homebrew</a> (an OS X package manager) to install nvm, which will  then let you manage multiple versions of Node.js and npm very easily.</p>
+<p>We'll also need a tool called <a href="http://www.gnu.org/software/wget/">wget</a> that's used to retrieve content from web servers, and we'll also install it using homebrew:</p>
+<pre><code class="language-sh">$ brew update
+$ brew install wget
+</code></pre>
+<p>Next, we'll have to install Buster and Ghost; if you have <code>pip</code> (a Python package manager), installing Buster is as simple as:</p>
+<pre><code class="language-sh"># go to your blog's directory
+$ cd ~/Dropbox/blog
+
+# if you don't have already have pip
+$ sudo easy_install pip
+
+$ sudo pip install buster
+</code></pre>
+<p>while this is the easiest way I know of to install and start your local Ghost server:</p>
+<pre><code class="language-sh">$ wget https://ghost.org/zip/ghost-0.7.0.zip
+$ unzip ghost-0.7.0.zip -d ghost
+$ cd ghost
+$ npm install --production
+$ npm start
+</code></pre>
+<p><code>npm start</code> starts the Node.js server that will serve up the admin interface for your blog at <code>http://localhost:2368/ghost</code>. This is where you'll create an admin account for managing your local blog posts, settings and themes and also where you'll create and edit your blog posts using Ghost's fancy side-by-side Markdown editor.</p>
+<h4 id="generatingthestaticfilesforyourblogsrepo">Generating the static files for your blog's repo</h4>
+<p>The next thing you'll want to do is create a repo for your static blog. On Github, create a new repo whose name is <code>[your-username].github.io</code>. The repo's name must be <code>[your-username].github.io</code>, otherwise Github won't know to create a site at that URL from that repo.</p>
+<p>Once it's been created, lets start our Ghost server, create a new tab in our terminal and use <code>buster</code> to create our blog's repo and its static files:</p>
+<pre><code># (in a new tab) get back to the blog folder
+$ cd ~/Dropbox/blog
+$ buster setup --gh-repo=\
+&quot;https://github.com/&lt;username&gt;/&lt;username&gt;.github.io.git&quot;
+$ buster generate
+$ buster deploy
+</code></pre>
+<p>This will create a local repo in the folder named <code>static</code> who's remote is the URL to the Github repo you just created. <code>buster generate</code> will create all of the appropriate directories, HTML pages and links for your entire Ghost blog within that folder. The last command, <code>buster deploy</code>, adds, commits and pushes the changes you generated up to your blog's repo. And that's it! Github Pages can take as much as 20 minutes to update, but it often happens much sooner.</p>
+<p>Every time you need make a change to your blog, whether by changing a theme or adding/editing a post, just run <code>npm start</code> within the <code>blog/ghost/</code> folder and call <code>buster generate</code> from your <code>blog</code> folder to recreate the appropriate static files. All you have to do now to re-deploy your the latest version of your blog is <code>buster deploy</code>!</p>
+<p>This is why I put <code>blog</code> in my Dropbox folder - edits can be made within the Ghost side-by-side Markdown editor on my main computer and will always be backed up without having to commit them to my blog's repo, and if I happen to be on my tablet or phone, I can just edit the raw Markdown.</p>
+<p>Once it's been deployed and you're done making changes to your blog, hit <code>Ctrl-C</code> from within the Ghost server tab to shut down the server.</p>
+<p>And that's it! You can check out my Github Pages-hosted Ghost blog at <a href="http://blog.sunnyg.io">http://blog.sunnyg.io</a>. If you have any questions, feel free to reach out to me and thanks for reading!</p>
+</div>]]></content:encoded></item><item><title><![CDATA[Introduction to Flux and Angular Integration]]></title><description><![CDATA[<div class="kg-card-markdown"><p>For my group's thesis project at <a href="http://www.hackreactor.com">Hack Reactor</a>, our client is having us design a vendor app for taking and processing drink orders at bars to accompany the app they have already built for end-users. The existing app is our model for the vendor app and employed an interesting design</p></div>]]></description><link>http://localhost:2368/2014/12/30/flux-and-angular/</link><guid isPermaLink="false">5b7b9ad2af98ac27da31b7fa</guid><category><![CDATA[angularjs]]></category><category><![CDATA[flux]]></category><category><![CDATA[facebook flux]]></category><category><![CDATA[google angular]]></category><category><![CDATA[flux-angular]]></category><dc:creator><![CDATA[Sunny G]]></dc:creator><pubDate>Tue, 30 Dec 2014 19:33:28 GMT</pubDate><content:encoded><![CDATA[<div class="kg-card-markdown"><p>For my group's thesis project at <a href="http://www.hackreactor.com">Hack Reactor</a>, our client is having us design a vendor app for taking and processing drink orders at bars to accompany the app they have already built for end-users. The existing app is our model for the vendor app and employed an interesting design choice: the combined use of Facebook's <a href="https://facebook.github.io/flux/">Flux</a> and Google's <a href="https://angularjs.org/">AngularJS</a>. While I'm no expert at either technology, I'm going to elaborate on this integration and how our library of choice, <a href="https://github.com/christianalfoni/flux-angular">flux-angular</a>, handles this unique combination.</p>
+<h4 id="whatisflux">What is Flux?</h4>
+<p>Flux is self-descibed as an &quot;architecture for building client-side web apps,&quot; and at its core, its just an architecture pattern for managing data flow throughout your application. Its also commonly referred to as an alternative to the traditional model-view-controller architecture.</p>
+<p>Flux is composed of three main parts: the store (which holds your state), actions (which trigger the dispatcher to do something), and a dispatcher (which triggers callbacks registered to it by the store to modify the store). According to Facebook, this allows developers to more easily reason about the data flow throughout their large applications as each component only has one classification of input components and only outputs to/affects another classification of components.</p>
+<h4 id="howdoesitworkwithangular">How does it work with Angular?</h4>
+<p>Shying away from strict adherence to the Flux architecture, flux-angular entirely eschews the use dispatchers altogether, instead building solely on actions and stores.</p>
+<p>An example of an <code>$store</code> factory (taken from the README) would look like this for a simple Todo application:</p>
+<pre><code>angular.module('app', ['flux'])
+.factory('$store', function (flux, $actions) {
+    return flux.store({
+        todos: [],
+        actions: [
+            $actions.addTodo
+        ],
+        addTodo: function (title) {
+            this.todos.push({title: title, created: Date.now()});
+            this.emitChange();
+        },
+        exports: {
+            getTodos: function () {
+                return this.todos;
+            }
+        }
+    });
+});
+</code></pre>
+<p>This <code>$store</code> has an array to Todo items which will be the source of truth for these items in the application.</p>
+<p><code>addTodo</code> is an action that can modify the <code>$store</code> whenever called. It also calls <code>emitChange()</code>, emitting a change event whenever the <code>$store</code> is changed; this will become useful when we have controllers in our application that want to bind their <code>$scope</code> to a part of the <code>$store</code>.</p>
+<p>We also export a <code>getTodos</code> getter function so that when a controller wants to update its <code>$scope</code> with the latest <code>$store</code> data, it can bind to that data without worrying about later modifying the <code>$store</code> itself.</p>
+<p>In order to use the <code>addTodo</code> function in a controller (e.g. <code>$actions.addTodo('go to the store')</code>), we must first bind the <code>$store</code>'s actions to the <code>$actions</code> factory:</p>
+<pre><code>angular.module('app', ['flux'])
+.factory('$actions', function (flux) {
+    return flux.actions([
+        'addTodo',
+    ]);
+});
+</code></pre>
+<p>Now, elsewhere in some other controller, we can do this:</p>
+<pre><code>.controller('MyCtrl', function ($scope, $store, $actions) {
+
+    $store.bindTo($scope, function () {
+        $scope.todos = $store.getTodos();
+    });
+
+    $scope.title = '';
+    $scope.addTodo = function () {
+        $actions.addTodo($scope.title);
+    };
+});
+</code></pre>
+<p>The first block lets us update our controller's local <code>$scope</code> anytime the <code>$store</code> changes, presumably preventing us from having to do a massive degree of dirty checking anytime we change something on the <code>$scope</code>.</p>
+<p>The second block ties a local <code>$scope.addTodo</code> function to the <code>$store</code>-modifying <code>addTodo</code> function so that our data only has to update in one location from which all other <code>$scope</code>s will derive that data.</p>
+<p>I hope this has given you an insight into how the seemingly disparate technologies can be used synergistically. Thanks for reading!</p>
+</div>]]></content:encoded></item><item><title><![CDATA[Introduction to Auth0]]></title><description><![CDATA[<div class="kg-card-markdown"><p>One major component of our thesis project is the ability to authenticate users from their Facebook accounts and vendors from their email address/password combinations. To do this, we could either 1) roll our own authentication scheme where our server issues <a href="http://jwt.io/">JWTs</a> to our clients or 2) use a service</p></div>]]></description><link>http://localhost:2368/2014/12/18/introduction-to-auth0/</link><guid isPermaLink="false">5b7b9ad2af98ac27da31b7f7</guid><category><![CDATA[auth0]]></category><category><![CDATA[authentication]]></category><category><![CDATA[AaaS]]></category><category><![CDATA[authentication as a service]]></category><dc:creator><![CDATA[Sunny G]]></dc:creator><pubDate>Thu, 18 Dec 2014 19:17:33 GMT</pubDate><content:encoded><![CDATA[<div class="kg-card-markdown"><p>One major component of our thesis project is the ability to authenticate users from their Facebook accounts and vendors from their email address/password combinations. To do this, we could either 1) roll our own authentication scheme where our server issues <a href="http://jwt.io/">JWTs</a> to our clients or 2) use a service that issues and manages the JWTs for us. To preserve our sanity, we chose the latter, specifically, the identity and authentication service <a href="https://auth0.com">Auth0</a>.</p>
+<p>Auth0 provides users a way to login via custom, open-source web forms called widgets that can be filled out with username/password combos or through social integration buttons that allow for third-party authentication by Facebook, Google, Twitter and others.</p>
+<p>Auth0 also gives you the option of customizing your login/signup pipeline by implementing your own rules in a sandboxed vanilla JavaScript environment with a few optional npm modules such as <code>pubnub</code>, <code>azurestorage</code>, <code>q</code>, or <code>mongo</code>. You can, for example, have a rule setup to automatically notify your server via a PubNub channel every time a user signs up for your service.</p>
+<p>By default, Auth0 will store your user's credentials securely on their server, but you can also opt to have the same credentials stored on your own database by using the <code>mongo</code> or <code>mysql</code> npm modules within a rule that runs like a hook on certain types of authentications.</p>
+<p>In addition, Auth0 provides many other enterprise services, such as analytics and a web management dashboard. I think we made the right choice in opting-out of rolling our own authentication and I hope this post will help you make the same decision. Thanks for reading!</p>
+</div>]]></content:encoded></item><item><title><![CDATA[Quantum Computer-Proof Digital Signatures, Part 2]]></title><description><![CDATA[<div class="kg-card-markdown"><p>In my previous <a href="http://blog.sunnyg.io/2014/12/07/lamport-key-pairs-and-signature-scheme/">post</a>, I went over my <a href="https://github.com/sunny-g/lamport-merkle.js">implementation</a> of a quantum-computer-proof digital signature algorithm known as the <a href="https://en.wikipedia.org/wiki/Lamport_signature">Lamport signature scheme</a>. We also learned of its greatest weakness: the keypairs can only be used once. While we can't change this property of the algorithm, we can mitigate the weakness by</p></div>]]></description><link>http://localhost:2368/2014/12/13/merkle-key-trees-and-signature-scheme/</link><guid isPermaLink="false">5b7b9ad2af98ac27da31b7f6</guid><category><![CDATA[lamport]]></category><category><![CDATA[encryption]]></category><category><![CDATA[signature]]></category><category><![CDATA[digital signature]]></category><category><![CDATA[merkle]]></category><category><![CDATA[quantum computer]]></category><dc:creator><![CDATA[Sunny G]]></dc:creator><pubDate>Sat, 13 Dec 2014 03:59:45 GMT</pubDate><content:encoded><![CDATA[<div class="kg-card-markdown"><p>In my previous <a href="http://blog.sunnyg.io/2014/12/07/lamport-key-pairs-and-signature-scheme/">post</a>, I went over my <a href="https://github.com/sunny-g/lamport-merkle.js">implementation</a> of a quantum-computer-proof digital signature algorithm known as the <a href="https://en.wikipedia.org/wiki/Lamport_signature">Lamport signature scheme</a>. We also learned of its greatest weakness: the keypairs can only be used once. While we can't change this property of the algorithm, we can mitigate the weakness by chaining multiple Lamport keys together into a <a href="https://en.wikipedia.org/wiki/Merkle_tree">Merkle tree</a>.</p>
+<h3 id="keypairstructure">Keypair Structure</h3>
+<p>A Merkle tree is just a <a href="https://en.wikipedia.org/wiki/Tree_%28data_structure%29">tree</a> where each node's value is the hash of its children's values. The top (or root) node has the interesting property of implicitly containing the information of the entire tree since every node's value implicitly contains the values of if it's children.</p>
+<p>So with this in mind, we will start by generating a Lamport keypair for every message we may want to sign with this key tree (the variable <code>keyNum</code>). We then generate the hash of each keypair's public key and store these hashes in our tree (along with the keypairs and other useful information like the <code>size</code>, <code>numOfLevels</code> in the tree, and the <code>topHash</code>, which is effectively our key tree's public key).</p>
+<pre><code>var MerkleKeyTree = function(keyNum) {
+  this.size = keyNum || KEYNUM;
+  this._leaves = [];
+  this.usedKeyCount = 0;
+  var firstRow = [];
+  for (var leafNum = 0; leafNum &lt; this.size; leafNum++) {
+    var keypair = new LamportKeypair();
+    this._leaves.push(keypair);
+    firstRow.push( hash(keypair.pubKey) );
+  }
+  this.levels = [firstRow];
+
+  var levels = Math.ceil(Math.log2(this.size));
+  for (var i = 1; i &lt;= levels; i++) {
+    // for each level in the tree starting w/ 1 above the bottom
+    var curRow = [];
+    var prevRow = this.levels[i-1];
+    for (var k = 0; k &lt; prevRow.length; k += 2) {
+      // for each hash in the previous row
+      // hash it and the next hash's values
+      var h = hash(prevRow[k] + prevRow[k+1]);
+      curRow.push(h);
+    }
+    this.levels[i] = curRow;
+  }
+
+  this.numOfLevels = this.levels.length;
+  this.numOfKeys = this._leaves.length;
+  this.topHash = this.levels[this.levels.length - 1][0];
+};
+</code></pre>
+<p>So here's what the Merkle tree in our key tree looks like, with each array containing the hashes of its two child hashes:</p>
+<p><img src="http://localhost:2368/content/images/2018/08/Screen-Shot-2014-12-12-at-7-36-15-PM-1.png" alt="A sample Merkle key tree"></p>
+<h3 id="messagesigning">Message Signing</h3>
+<p>To use this tree to sign a message, we have to:</p>
+<ol>
+<li>Select a keypair (<code>leaf</code>) and use it to generate a signature.</li>
+<li>Publish the signature, along with the path of hashes at each level necessary to recreate the <code>topHash</code></li>
+</ol>
+<p>We <em>must</em> publish the path so that once the user verifies that the Lamport keypair we used was legitimate, they can hash the public key + sibling public key, and continue hashing these hashes + their siblings until they reach the <code>topHash</code>.</p>
+<pre><code>    MerkleKeyTree.prototype.sign = function(msg) {
+      var finalSig = {};
+      if (this.usedKeyCount === this.size - 1) {
+        throw new Error('This is your last keypair on this tree);
+      }
+      // select the first unused keypair
+      for (var i = 0; i &lt; this.numOfKeys; i++) {
+        if (!this._leaves[i].used) {
+          var randomKeypair = this._leaves[i];
+          var randomKeypairIndex = i;
+          break;
+        }
+      }
+      finalSig.keyPairId = randomKeypairIndex;
+      finalSig.pubKey = randomKeypair.pubKey;
+      finalSig.message = msg;
+      finalSig.signature = randomKeypair.sign(msg);
+      // create the path of the hashes needed to get from the
+        // published keypair to the topHash
+      finalSig.path = [];
+      var curLevel = 0;
+      var idx = randomKeypairIndex;
+      while (curLevel &lt; this.numOfLevels) {
+        if (idx % 2) {
+          finalSig.path.push(this.levels[curLevel][idx - 1])
+        } else {
+          finalSig.path.push(this.levels[curLevel][idx + 1])
+        }
+        curLevel++;
+        idx = parentIdx(idx);
+      }
+	  // publish the signature, set key properties
+      finalSig.path[finalSig.path.length - 1] = this.topHash;
+      randomKeypair.used = true;
+      this.usedKeyCount++;
+      return finalSig;
+    };
+</code></pre>
+<p>Here's an example signature of a message signed by the key tree above:<br>
+<img src="http://localhost:2368/content/images/2018/08/Screen-Shot-2014-12-12-at-7-39-34-PM-1.png" alt="A sample signature"></p>
+<h3 id="messageverification">Message Verification</h3>
+<p>To verify a signature, we must first verify <code>signature</code> against <code>pubKey</code>, just as we would with a traditional Lamport key. Then, we'll have to hash the <code>pubKey</code> and hash the result (in the right order) with its sibling key's hash, and keep taking the output and hashing it with its sibling in the next level of the key tree until we end up with one, lone hash.</p>
+<pre><code>MerkleKeyTree.prototype.verify = function(sigObj) {
+  var idx = sigObj.keyPairId;
+  var lamport = this._leaves[idx];
+  // if this is a valid Lamport signature...
+  if (lamport.verify(sigObj.message, sigObj.signature)) {
+  
+    // ... calculate the sibling hashes until you reach the topHash  
+    var h = hash(sigObj.pubKey);
+    for (var i = 0; i &lt; sigObj.path.length - 1; i++) {
+      var auth = sigObj.path[i];
+      if (idx % 2) {
+        h = hash(auth + h);
+      } else {
+        h = hash(h + auth);
+      }
+      idx = parentIdx(idx); // gets the parent level hash index
+    }
+    if (h === sigObj.path[sigObj.path.length - 1]) { return true; }
+  }
+  return false;
+};
+</code></pre>
+<p>If at the end of this process we end up with the string at the end of our <code>path</code> array (which is also our <code>topHash</code>), we'll know that the key used to sign the message belongs to this key tree and this <code>topHash</code> (which should match up with the <code>topHash</code> of the expected owner and message signer).</p>
+<p>In conclusion, with this signature scheme, we've allowed a user to generate one large key tree that can be used to sign arbitrarily many messages (including newer keytrees) while only marginally increasing the signature size. While this can't be used for secretly encrypting messages, in many applications (e.g. authenticating cryptocurrency transactions), a signature scheme is just enough.</p>
+<p>I hope both of these posts have shed some light on how wild yet understandable some cryptographic concepts can be. You can always check out my repo <a href="https://github.com/sunny-g/lamport-merkle.js">here</a> and as always, thanks for reading!</p>
+</div>]]></content:encoded></item><item><title><![CDATA[Quantum Computer-Proof Digital Signatures, Part 1]]></title><description><![CDATA[<div class="kg-card-markdown"><p>For my MVP (minimal viable product) project at <a href="http://hackreactor.com">Hack Reactor</a>, I developed a browser <a href="https://github.com/sunny-g/lamport-merkle.js">library</a> that implements two quantum-computer-proof digital signature algorithms known as the <a href="https://en.wikipedia.org/wiki/Lamport_signature">Lamport</a> and <a href="https://en.wikipedia.org/wiki/Merkle_signature_scheme">Merkle signature schemes</a>. In this post, I'll be going over the Lamport scheme and how it works.</p>
+<h3 id="keypairstructure">Keypair Structure</h3>
+<p>Unlike keypairs of traditional</p></div>]]></description><link>http://localhost:2368/2014/12/07/lamport-key-pairs-and-signature-scheme/</link><guid isPermaLink="false">5b7b9ad2af98ac27da31b7f5</guid><category><![CDATA[lamport]]></category><category><![CDATA[encryption]]></category><category><![CDATA[signature]]></category><category><![CDATA[digital signature]]></category><category><![CDATA[merkle]]></category><category><![CDATA[quantum computer]]></category><dc:creator><![CDATA[Sunny G]]></dc:creator><pubDate>Sun, 07 Dec 2014 21:08:05 GMT</pubDate><content:encoded><![CDATA[<div class="kg-card-markdown"><p>For my MVP (minimal viable product) project at <a href="http://hackreactor.com">Hack Reactor</a>, I developed a browser <a href="https://github.com/sunny-g/lamport-merkle.js">library</a> that implements two quantum-computer-proof digital signature algorithms known as the <a href="https://en.wikipedia.org/wiki/Lamport_signature">Lamport</a> and <a href="https://en.wikipedia.org/wiki/Merkle_signature_scheme">Merkle signature schemes</a>. In this post, I'll be going over the Lamport scheme and how it works.</p>
+<h3 id="keypairstructure">Keypair Structure</h3>
+<p>Unlike keypairs of traditional encryption algorithms, Lamport keys are not mathematically tied to one another nor are they derived from hard-to-solve problems like prime factorization (this is in fact the reason this algorithm is quantum computer-proof: so long as our secure hashing function can't have solving its inverse optimized by quantum computing, we should be safe). Our private key then is simply composed of 256 pairs of 32 byte numbers while the public key is made up of the hashes of each number:</p>
+<pre><code>var LamportKeypair = function() {
+  this._privKey = [];
+  this.pubKey = [];
+  this.used = false;
+
+  for (var i = 0; i &lt; 256; i++) {
+    var num1 = random32ByteString();
+    var num2 = random32ByteString();
+    var hash1 = hash(num1);
+    var hash2 = hash(num2);
+
+    this._privKey.push([num1, num2]);
+    this.pubKey.push([hash1, hash2]);
+  }
+}; 
+</code></pre>
+<h3 id="messagesigning">Message Signing</h3>
+<p>To sign a message with this key, we only have to do two things:</p>
+<ol>
+<li>Generate a 32 byte (256 bit) hash of the message.</li>
+<li>For each bit in the message, publish either the 1st or 2nd random number of that bit's corresponding pair of numbers within our private key.</li>
+</ol>
+<p>These steps end up looking like this:</p>
+<pre><code>LamportKeypair.prototype.sign = function(msg) {
+  var msgHash = hash(msg);
+  var signature = [];
+
+  var that = this;
+  // this iterates over every bit in a hash string 
+  // callback takes the bit and its index in the string
+  eachBit(msgHash, function(bit, bitIdx) {
+    signature.push( that._privKey[bitIdx][bit] );
+  });
+  return signature;
+};
+</code></pre>
+<p>But wait, if we publish the numbers in our private key, doesn't that defeat the purpose of making it private?</p>
+<p>Well yes, and this highlights the usability weakness of this signature scheme: we can only use each keypair once. The workaround for this is to incorporate multiple keys into a Merkle tree, but that's a topic for a later <a href="http://blog.sunnyg.io/2014/12/13/merkle-key-trees-and-signature-scheme/">post</a>.</p>
+<h3 id="messageverification">Message Verification</h3>
+<p>To verify the message, all we need to do now is check to see that every number in our signature hashes to one of the values in its corresponding pair in our public key:</p>
+<pre><code>LamportKeypair.prototype.verify = function(msg, signature) {
+  var msgHash = hash(msg);
+  var authentic = true;
+
+  var that = this;
+  eachBit(msgHash, function(bit, bitIdx) {
+    if (hash(signature[bitIdx]) !== that.pubKey[bitIdx][bit]) {
+      authentic = false;
+    }
+  });
+  return authentic;
+};
+</code></pre>
+<hr>
+<h3 id="whythisworks">Why This Works</h3>
+<p>To be a valid digital signature algorithm, we have to satisfy one main condition (and maybe a few others that I'm forgetting): <em>the public key cannot leak any information about the private key</em>. Since our public key only contains the hashes of these random numbers (and since hash functions can't be run in reverse, that is, from a hash tell us the input), we satisfy that condition and can now know with certainty one thing: <strong>the only person who could have published the numbers in the signature and the hashes in the public key is the same person who possessed all of the random numbers of the private key in the first place.</strong></p>
+<p>I hope this post has piqued your interest in non-traditional encryption schemes; I have a <a href="http://blog.sunnyg.io/2014/12/13/merkle-key-trees-and-signature-scheme/">companion post</a> about how Merkle trees can mitigate the one-time-expiry property of Lamport signatures. If you want to check out my repo, you can find it (and star it hopefully?) <a href="https://github.com/sunny-g/lamport-merkle.js">here</a>. Thanks for reading!</p>
+</div>]]></content:encoded></item><item><title><![CDATA[JavaScript's Bind Function]]></title><description><![CDATA[<div class="kg-card-markdown"><p>Today I'll be walking through my simple, less robust reimplentation of <code>Function.prototype.bind()</code> which, along with <code>apply()</code> and <code>call()</code>, allows us JavaScript developers use functions outside of their defined execution context. However, unlike <code>apply()</code> and <code>call()</code>, bind returns a function bound to the specified context (instead of immediately invoking</p></div>]]></description><link>http://localhost:2368/2014/11/19/the-bind-function/</link><guid isPermaLink="false">5b7b9ad2af98ac27da31b7f4</guid><category><![CDATA[javascript]]></category><category><![CDATA[bind]]></category><category><![CDATA[apply]]></category><category><![CDATA[call]]></category><dc:creator><![CDATA[Sunny G]]></dc:creator><pubDate>Wed, 19 Nov 2014 16:56:55 GMT</pubDate><content:encoded><![CDATA[<div class="kg-card-markdown"><p>Today I'll be walking through my simple, less robust reimplentation of <code>Function.prototype.bind()</code> which, along with <code>apply()</code> and <code>call()</code>, allows us JavaScript developers use functions outside of their defined execution context. However, unlike <code>apply()</code> and <code>call()</code>, bind returns a function bound to the specified context (instead of immediately invoking the function in the new context). The information in this paragraph alone is enough to start implementing <code>bind</code>, but in case it's not obvious, let's continue.</p>
+<p>So, what do we mean when we say we're &quot;binding&quot; a function to an &quot;execution context?&quot; In short, &quot;setting a function's execution context&quot; sets its value of <code>this</code> to the specified context. Say we had an object called <code>alice</code>:</p>
+<pre><code>var alice = {
+	name: 'alice',
+    shout: function() {
+    	console.log('Hey' + this.name + '!');
+    }
+}
+</code></pre>
+<p>Calling <code>alice.shout()</code> will log <code>'Hey alice!'</code>. Simple. But what if we wanted to have an object <code>bob</code> with a <code>'name'</code> property of <code>'bob'</code> to shout as well, without repeating ourselves by rewriting the function? Well then we'd need to apply the function to our object:</p>
+<pre><code>alice.shout.apply(bob);	// 		logs 'Hey bob!'
+</code></pre>
+<p>The main (and maybe only) difference between <code>call</code> and <code>apply</code> is the function signature; <code>call</code> takes in a context and the arguments as individual parameters, whereas <code>apply</code> takes in the context and an array of arguments. With this understanding of <code>call</code> and <code>apply</code>, we now have enough information to implement <code>bind</code>.</p>
+<h4 id="thesolution">The Solution</h4>
+<pre><code>Function.prototype.bind = function(context) {
+	var args = Array.prototype.slice.call(arguments, 1);
+    var funcToBind = this;
+    return function() {
+    	var boundFuncArgs = Array.prototype.slice.call(arguments);
+        return funcToBind.apply(context, args.concat(boundFuncArgs));
+    }
+}
+</code></pre>
+<p>The bind function takes in one specified argument (the desired context) and (as well as optional arguments that may be closure-scoped to the bound function). The second line stores these arguments in an array called <code>args</code>. We'll also create a temporary variable <code>funcToBind</code> to hold a reference to our function since the keyword <code>this</code> will take on new meaning within the function we return.</p>
+<p>This returned function will also have its own variables stored in an array called <code>boundFuncArgs</code>. Then we return the value of calling <code>funcToBind</code> in the specified context with the arguments being the closure-scoped <code>args</code> concatenated with the <code>boundFuncArgs</code>.</p>
+<p>So using <code>bind</code>, we can now return a function specific to logging <code>bob.name</code>:</p>
+<pre><code>var bobShout = alice.shout.bind(bob)
+bobShout()	// logs 'Hey bob!'
+</code></pre>
+<h4 id="oneusecase">One Use Case</h4>
+<p>One common use of <code>bind</code> is within a <code>setTimeout</code> call. Say we wanted to call <code>alice.shout()</code> 2 seconds from now. We could write the function like this, but it would fail:</p>
+<pre><code>setTimeout(alice.shout, 2000);	// logs undefined
+</code></pre>
+<p>This fails because <code>setTimeout</code> only immediately stores a reference to the function; when this function is executed 2 seconds from now, its execution context (and thus, the keyword <code>this</code>) will be set to the <code>global</code> (or in the browser, <code>window</code>) object, which doesn't have a property <code>name</code>.</p>
+<p>If, however, we were to <code>bind</code> the function to <code>alice</code>, we could execute this code flawlessly:</p>
+<pre><code>setTimeout(alice.shout.bind(alice), 2000); 	// logs 'Hey alice!'
+</code></pre>
+<p>To reiterate, this works because at the time <code>bind</code> is being called (the same time <code>setTimeout</code> is storing the function reference), <code>bind</code> is returning us the same function with the keyword <code>this</code> permanently bound to the specified context, which in this case is the object <code>alice</code>.</p>
+<p>I hope this clarifies some of the confusion about <code>bind</code>, though it seems to me that we may have passed that confusion on to how the <code>this</code> keyword works, which I'll tackle in a later post.</p>
+</div>]]></content:encoded></item><item><title><![CDATA[IP Addressing (and a segue into CJDNS)]]></title><description><![CDATA[<div class="kg-card-markdown"><p>In this post, I'll be lightly elaborating on a 5-minute talk I've yet to give to my classmates at <a href="http://www.hackreactor.com/">Hack Reactor</a>. We'll start with IPv4 addresses, their format and what's known as <a href="http://en.wikipedia.org/wiki/IP_address#IPv4_address_exhaustion">address exhaustion</a> before going over the advantages to the new IPv6 address format and finishing with an overview</p></div>]]></description><link>http://localhost:2368/2014/11/18/ip-addressing-and-a-segue-into-cjdns/</link><guid isPermaLink="false">5b7b9ad2af98ac27da31b7f2</guid><category><![CDATA[cjdns]]></category><category><![CDATA[p2p]]></category><category><![CDATA[ipv6]]></category><category><![CDATA[meshnet]]></category><category><![CDATA[ipv4]]></category><dc:creator><![CDATA[Sunny G]]></dc:creator><pubDate>Tue, 18 Nov 2014 06:58:12 GMT</pubDate><content:encoded><![CDATA[<div class="kg-card-markdown"><p>In this post, I'll be lightly elaborating on a 5-minute talk I've yet to give to my classmates at <a href="http://www.hackreactor.com/">Hack Reactor</a>. We'll start with IPv4 addresses, their format and what's known as <a href="http://en.wikipedia.org/wiki/IP_address#IPv4_address_exhaustion">address exhaustion</a> before going over the advantages to the new IPv6 address format and finishing with an overview into <a href="https://github.com/cjdelisle/cjdns">CJDNS</a>.</p>
+<hr>
+<h3 id="ipv4">IPv4</h3>
+<p><img src="http://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Ipv4_address.svg/500px-Ipv4_address.svg.png" alt=""></p>
+<p>IPv4 addresses are composed of 4 sections of 8-bit numbers, giving us an address space of (2^8)^4 addresses, or for those who don't speak in exponentials, a maximum of 4,294,967,296 unique addresses. However, the amount actually addressable to individual devices is far less since many of these are (by convention) inaccessible or reserved for other uses.</p>
+<p>For example, some addresses were allocated to some big companies of the 90's, such as Xerox, Apple and Halliburton. Other addresses and address spaces, were allocated for future private use. Two such addresses are <a href="http://127.0.0.0">http://127.0.0.0</a> and <a href="http://127.0.0.1">http://127.0.0.1</a> and are known as the loopback addresses, only accessible locally on your computer or server (hence the more common URL, <a href="http://localhost">http://localhost</a>).</p>
+<p>There are some ranges reserved for &quot;private networks,&quot; some of which you might recognize as your router's IP address (192.168.0.1, 10.0.0.1 or 172.16.0.0). By giving routers a unique global address (and giving their connected devices a derivative address from one of the three private network address spaces listed above), we've been able to mitigate this <a href="http://en.wikipedia.org/wiki/IP_address#IPv4_address_exhaustion">address space exhaustion</a> issue and avoid its implications. But considering there may be as many 16 billion internet-connected devices by the end of 2014, even this scheme will have to come to an end.</p>
+<hr>
+<h3 id="ipv6">IPv6</h3>
+<p><img src="http://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Ipv6_address.svg/500px-Ipv6_address.svg.png" alt=""></p>
+<p>The next iteration of IP addressing is known as IPv6 and makes quite a large change to their format. They are composed of 8 groups of 4 hexadecimal characters, giving us an address space of (16^4)^8 == 2^128, or 3.402 e38 addresses. Interestingly enough, this scheme was named in 1995, meaning that this problem was not only forseen almost 20 years ago, but <strong>it has also been acted on by no one for almost 20 years.</strong> But this brings me to my next point and what I really want to talk about...</p>
+<hr>
+<h3 id="cjdns">CJDNS</h3>
+<p><a href="https://github.com/cjdelisle/cjdns">CJDNS</a> is an open-source, p2p encrypted meshnetting software and protocol whose developers aim make it the backbone of a new, NSA-proof internet (a goal that, while very, very lofty, might actually be accomplished at some point in the future).</p>
+<p>Although it's use constitutes a separate, otherwise inaccessible-to-the-rest-of-the-world internet, I included it here in this post because it does something very interesting: it assigns unique IPv6 addresses to all of it's nodes from the get-go.</p>
+<p><img src="http://essayweb.net/miscellany/images/OSI_model.jpg" alt=""></p>
+<p>On what we know as the World Wide Web, traffic can be encrypted between a browser and server on the presentation layer of the OSI Model using the SSL protocol, which is now used almost everywhere. However, there are some weaknesses with SSL (excluding <a href="http://heartbleed.com/">bugs</a> in some of its various implementations), namely the required existence of trusted third-parties.</p>
+<p>Rather than resort to this layer for encrypting traffic, CJDNS operates and encrypts on the IP layer, just above the two layers responsible for actually carrying and delivering internet traffic. In effect, CJDNS completely hijacks and rewrites the book on how IP-layer traffic and routing work and the responsibilities they should inherit.</p>
+<p>What's even more interesting is the fact that the addresses themselves are the hash of the public keys used to encrypt the packets sent between any two nodes. This means that you can always be certain that the address you are communicating with is responsible for the encryption of the traffic you receive from them and that the traffic has not been man-in-the-middled; who that user is and whether or not you can trust them is unfortunately a completely different question.</p>
+<p>I'm going to end this post here, but will continue this line of thought in another post in the near future, and will hopefully be connected to its most popular intranet known as <a href="https://wiki.projectmeshnet.org/Known_Hyperboria_sites">Hyperboria</a>; if so, I'll be sure to leave a tutorial for getting started with this super-cool software.</p>
+</div>]]></content:encoded></item><item><title><![CDATA[This and That, On Inheritance]]></title><description><![CDATA[<div class="kg-card-markdown"><p>This place rocks. While I can't claim to be an expert on the keyword 'this' or every difference and nuance between the four instantiation styles (functional, functional-shared, prototypal, and pseudoclassical), I definitely have a best grasp I've ever had on the topics. Perhaps in another post I'll lay out what</p></div>]]></description><link>http://localhost:2368/2014/11/02/this-and-that-on-inheritance/</link><guid isPermaLink="false">5b7b9ad2af98ac27da31b7f1</guid><category><![CDATA[pseudoclassical]]></category><category><![CDATA[hack reactor]]></category><category><![CDATA[instantiation]]></category><category><![CDATA[javascript]]></category><category><![CDATA[prototypal]]></category><dc:creator><![CDATA[Sunny G]]></dc:creator><pubDate>Sun, 02 Nov 2014 22:42:02 GMT</pubDate><content:encoded><![CDATA[<div class="kg-card-markdown"><p>This place rocks. While I can't claim to be an expert on the keyword 'this' or every difference and nuance between the four instantiation styles (functional, functional-shared, prototypal, and pseudoclassical), I definitely have a best grasp I've ever had on the topics. Perhaps in another post I'll lay out what I understand about them.</p>
+<p>My partner and I have been sailing through the data structures sprint, which has us implementing (w/o using arrays) simple stacks, queues, linked lists, sets, hash tables, trees, binary search trees and graphs and some simple associated methods. I can't speak highly enough of how cool it's been to finally grok what these structures are, what they are good for, and (especially for achieving mastery), what they're bad at.</p>
+</div>]]></content:encoded></item><item><title><![CDATA[First Day Down]]></title><description><![CDATA[<div class="kg-card-markdown"><p>Hack Reactor is exactly as intense as you think it would be, if not in terms of content (since we're primarily reviewing some of the later precourse work), then in terms of sheer endurance required. 11 hours a day, 6 days a week is no joke, and if you're not</p></div>]]></description><link>http://localhost:2368/2014/11/02/first-day-down/</link><guid isPermaLink="false">5b7b9ad2af98ac27da31b7f0</guid><category><![CDATA[hack reactor]]></category><category><![CDATA[javascript]]></category><category><![CDATA[recursion]]></category><dc:creator><![CDATA[Sunny G]]></dc:creator><pubDate>Sun, 02 Nov 2014 22:41:09 GMT</pubDate><content:encoded><![CDATA[<div class="kg-card-markdown"><p>Hack Reactor is exactly as intense as you think it would be, if not in terms of content (since we're primarily reviewing some of the later precourse work), then in terms of sheer endurance required. 11 hours a day, 6 days a week is no joke, and if you're not in tune with your own needs, you definitely run the risk of burning out.</p>
+<p><a href="https://www.youtube.com/watch?v=Pgd2w0SQEYI">Having said that</a>, I cannot wait for tomorrow. Marcus spent a good time today differentiating between the different strategies we could employ to rewrite a basic version of a very popular browser-based recursive function, using the analogy of telling classmates to write down the names of those around them wearing red shirts on a notepad:</p>
+<ol>
+<li>Marcus telling each classmate to write the names on a public notepad is akin to storing your recursion results in a global var, which means that you can only call the function once before having to instantiate a new var or clean out the old one.</li>
+<li>Marcus creating a notepad and passing it to the first classmates (to be passed along afterwards) would be like creating a top level var within your function and calling a subroutine to do all of the recursion (my previous preference and go-to strategy).</li>
+<li>The third has each classmate write their own notepad of names and pass the notepad up to the classmate who passed the instructions, concatenating them with the caller's notepads every step of the way until you get to Marcus, who just returns the notepad. It took me a while to finally wrap my head around it (which is not to say that if you asked me to write this tomorrow, I would do it successfully), but I think I have a much more solid grasp on recursion than at any point in the last year, so there's that.</li>
+</ol>
+<p>Hopefully that made sense but if it doesn't, well whatever, its 11:13PM after my first day and I'm tired as hell.</p>
+</div>]]></content:encoded></item><item><title><![CDATA['Twas The Night Before Hack Reactor]]></title><description><![CDATA[<div class="kg-card-markdown"><p>So tomorrow begins the rest of my life. To satisfy a necessary requirement of the program, I set up this blog. Hopefully though, that won't be the only reason why I maintain it. As I get more comfortable with what I learn and teach myself, I will [ideally] develop a</p></div>]]></description><link>http://localhost:2368/2014/11/02/twas-the-night-before-hack-reactor/</link><guid isPermaLink="false">5b7b9ad2af98ac27da31b7ef</guid><category><![CDATA[hack reactor]]></category><category><![CDATA[javascript]]></category><dc:creator><![CDATA[Sunny G]]></dc:creator><pubDate>Sun, 02 Nov 2014 22:21:22 GMT</pubDate><content:encoded><![CDATA[<div class="kg-card-markdown"><p>So tomorrow begins the rest of my life. To satisfy a necessary requirement of the program, I set up this blog. Hopefully though, that won't be the only reason why I maintain it. As I get more comfortable with what I learn and teach myself, I will [ideally] develop a voice and a purpose for contributing here, and will hopefully be able to distill and share more useful, more relevant and easier-to-comprehend-and-digest ideas and information.</p>
+<p>But don't hold your breath, this could take a while.</p>
+</div>]]></content:encoded></item></channel></rss>
