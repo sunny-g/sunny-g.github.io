@@ -1,10 +1,13 @@
 +++
 title = "Quantum Computer-Proof Digital Signatures, Part 2 - Merkle Signatures"
+
+[taxonomies]
+tags = ["cryptography", "merkle", "digital signatures"]
 +++
 
 In my previous [post](@/blog/2014-12-07-lamport-signatures.md), I went over my [implementation](https://github.com/sunny-g/lamport-merkle.js) of a quantum-computer-proof digital signature algorithm known as the [Lamport signature scheme](https://en.wikipedia.org/wiki/Lamport_signature). We also learned of its greatest weakness: the keypairs can only be used once. While we can't change this property of the algorithm, we can mitigate the weakness by chaining multiple Lamport keys together into a [Merkle tree](https://en.wikipedia.org/wiki/Merkle_tree).
 
-# Keypair Structure
+## Keypair Structure
 
 A Merkle tree is just a [tree](https://en.wikipedia.org/wiki/Tree_%28data_structure%29) where each node's value is the hash of its children's values. The top (or root) node has the interesting property of implicitly containing the information of the entire tree since every node's value implicitly contains the values of if it's children.
 
@@ -47,7 +50,7 @@ So here's what the Merkle tree in our key tree looks like, with each array conta
 
 ![A sample Merkle key tree](../2014-12-13-merkle-tree.png)
 
-# Message Signing
+## Message Signing
 
 To use this tree to sign a message, we have to:
 
@@ -100,7 +103,7 @@ Here's an example signature of a message signed by the key tree above:
 
 ![A sample signature](../2014-12-13-merkle-sig.png)
 
-# Message Verification
+## Message Verification
 
 To verify a signature, we must first verify `signature` against `pubKey`, just as we would with a traditional Lamport key. Then, we'll have to hash the `pubKey` and hash the result (in the right order) with its sibling key's hash, and keep taking the output and hashing it with its sibling in the next level of the key tree until we end up with one, lone hash.
 

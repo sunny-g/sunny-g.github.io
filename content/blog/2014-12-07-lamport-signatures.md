@@ -1,10 +1,13 @@
 +++
 title = "Quantum Computer-Proof Digital Signatures, Part 1 - Lamport Signatures"
+
+[taxonomies]
+tags = ["cryptography", "lamport", "digital signatures"]
 +++
 
 For my MVP (minimal viable product) project at [Hack Reactor](http://hackreactor.com), I developed a browser [library](https://github.com/sunny-g/lamport-merkle.js) that implements two quantum-computer-proof digital signature algorithms known as the [Lamport](https://en.wikipedia.org/wiki/Lamport_signature) and [Merkle signature schemes](https://en.wikipedia.org/wiki/Merkle_signature_scheme). In this post, I'll be going over the Lamport scheme and how it works.
 
-# Keypair Structure
+## Keypair Structure
 
 Unlike keypairs of traditional encryption algorithms, Lamport keys are not mathematically tied to one another nor are they derived from hard-to-solve problems like prime factorization (this is in fact the reason this algorithm is quantum computer-proof: so long as our secure hashing function can't have solving its inverse optimized by quantum computing, we should be safe). Our private key then is simply composed of 256 pairs of 32 byte numbers while the public key is made up of the hashes of each number:
 
@@ -26,7 +29,7 @@ var LamportKeypair = function() {
 };
 ```
 
-# Message Signing
+## Message Signing
 
 To sign a message with this key, we only have to do two things:
 
@@ -53,7 +56,7 @@ But wait, if we publish the numbers in our private key, doesn't that defeat the 
 
 Well yes, and this highlights the usability weakness of this signature scheme: we can only use each keypair once. The workaround for this is to incorporate multiple keys into a Merkle tree, but that's a topic for a later post.
 
-# Message Verification
+## Message Verification
 
 To verify the message, all we need to do now is check to see that every number in our signature hashes to one of the values in its corresponding pair in our public key:
 
