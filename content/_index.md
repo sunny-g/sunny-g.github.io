@@ -15,6 +15,6 @@ I'm looking for work! If you're interested in hiring me, please reach out to me 
 
 - email: [sunny.gonna@gmail.com](mailto:sunny.gonna@gmail.com)
 - github: [@sunny-g](https://github.com/sunny-g)
-- linkedin: [sunnygonna](https://linkedin.com/in/sunnygonna)
+<!-- - linkedin: [sunnygonna](https://www.linkedin.com/in/sunnygonna) -->
 - ETH: [sunnyg.eth](https://app.ens.domains/sunnyg.eth)
 - SOL: [sunnyg.sol](https://www.sns.id/domain?domain=sunnyg)

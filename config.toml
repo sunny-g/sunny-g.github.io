@@ -1,5 +1,5 @@
 # The URL the site will be built for
-base_url = "https://sunnyg.io"
+base_url = "https://sunny-g.github.io"
 
 title = ""
 description = ""
@@ -50,5 +50,5 @@ header_nav = [
   {name_en = "Home", url = "/"},
   {name_en = "Blog", url = "/blog"},
   {name_en = "Github", url = "https://github.com/sunny-g"},
-  {name_en = "Linkedin", url = "https://linkedin.com/in/sunnygonna"},
+  # {name_en = "Linkedin", url = "https://www.linkedin.com/in/sunnygonna"},
 ]
