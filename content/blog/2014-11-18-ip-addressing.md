@@ -5,7 +5,7 @@ title = "IP Addressing (and a segue into CJDNS)"
 tags = ["cjdns", "ipv6"]
 +++
 
-In this post, I'll be lightly elaborating on a 5-minute talk I've yet to give to my classmates at [Hack Reactor](http://www.hackreactor.com/). We'll start with IPv4 addresses, their format and what's known as [address exhaustion](http://en.wikipedia.org/wiki/IP_address#IPv4_address_exhaustion) before going over the advantages to the new IPv6 address format and finishing with an overview into [CJDNS](https://github.com/cjdelisle/cjdns).
+In this post, I'll be lightly elaborating on a 5-minute talk I've yet to give to my classmates at [Hack Reactor](http://www.hackreactor.com/). We'll start with IPv4 addresses, their format and what's known as address exhaustion before going over the advantages to the new IPv6 address format and finishing with an overview into [CJDNS](https://github.com/cjdelisle/cjdns).
 
 ## IPv4
 
@@ -15,7 +15,7 @@ IPv4 addresses are composed of 4 sections of 8-bit numbers, giving us an address
 
 For example, some addresses were allocated to some big companies of the 90's, such as Xerox, Apple and Halliburton. Other addresses and address spaces, were allocated for future private use. Two such addresses are http://127.0.0.0 and http://127.0.0.1 and are known as the loopback addresses, only accessible locally on your computer or server (hence the more common URL, http://localhost).
 
-There are some ranges reserved for "private networks," some of which you might recognize as your router's IP address (192.168.0.1, 10.0.0.1 or 172.16.0.0). By giving routers a unique global address (and giving their connected devices a derivative address from one of the three private network address spaces listed above), we've been able to mitigate this [address space exhaustion](http://en.wikipedia.org/wiki/IP_address#IPv4_address_exhaustion) issue and avoid its implications. But considering there may be as many 16 billion internet-connected devices by the end of 2014, even this scheme will have to come to an end.
+There are some ranges reserved for "private networks," some of which you might recognize as your router's IP address (192.168.0.1, 10.0.0.1 or 172.16.0.0). By giving routers a unique global address (and giving their connected devices a derivative address from one of the three private network address spaces listed above), we've been able to mitigate this address space exhaustion issue and avoid its implications. But considering there may be as many 16 billion internet-connected devices by the end of 2014, even this scheme will have to come to an end.
 
 ## IPv6
 
