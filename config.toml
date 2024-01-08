@@ -1,5 +1,4 @@
-# The URL the site will be built for
-base_url = "https://sunny-g.github.io"
+base_url = "https://sunnyg.io"
 
 title = ""
 description = ""
