@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+<meta content="text/html; charset=UTF-8" http-equiv="content-type"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+<meta name="robots" content="index, follow">
+
+
+
+
+
+
+
+
+
+
+
+
+<title>Quantum Computer-Proof Digital Signatures, Part 2 - Merkle Signatures</title>
+
+
+
+<meta name="title" content="Quantum Computer-Proof Digital Signatures, Part 2 - Merkle Signatures">
+
+
+<meta name="author" content="Sunny Gonnabathula">
+
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://sunnyg.io/blog/merkle-signatures/">
+
+<meta property="og:site_name" content="">
+
+
+<meta property="og:title" content="Quantum Computer-Proof Digital Signatures, Part 2 - Merkle Signatures">
+
+
+
+
+
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:url" content="https://sunnyg.io/blog/merkle-signatures/">
+
+<meta property="twitter:title" content="Quantum Computer-Proof Digital Signatures, Part 2 - Merkle Signatures">
+
+
+
+
+<link rel="canonical" href="https://sunnyg.io/blog/merkle-signatures/">
+
+
+
+
+<link rel="alternate" type="application/atom+xml" title="RSS" href="https://sunnyg.io/atom.xml"> 
+
+
+
+<link rel="stylesheet" href="https://sunnyg.io/css/style.css"/>
+
+<script src="https://sunnyg.io/js/script.js" defer></script>
+
+
+</head>
+<body>
+    <div class="wrapper">
+      <header>
+          
+
+  
+
+
+  <nav class="navBar">
+    
+      <a href="&#x2F;" class="">
+        
+        Home
+      </a>
+    
+      <a href="&#x2F;blog" class="">
+        
+        Blog
+      </a>
+    
+      <a href="https:&#x2F;&#x2F;github.com&#x2F;sunny-g" class="">
+        
+        Github
+      </a>
+    
+
+  <div class="themeSwitch">
+    
+    <button class="themeButton dark" onclick="setTheme('dark')" title="Dark mode"><svg class="icons icons__background"><use href="https://sunnyg.io/icons.svg#darkMode"></use></svg></button>
+    <button class="themeButton light" onclick="setTheme('light')" title="Light mode"><svg class="icons icons__background"><use href="https://sunnyg.io/icons.svg#lightMode"></use></svg></button>
+    
+  </div>
+</nav>
+
+
+      </header>
+      <main>
+          
+<div><a href="..">..</a>/<span class="metaData">merkle-signatures</span></div>
+<time datetime="2014-12-13">Published on: <span class="metaData">2014-12-13</span></time>
+
+<address rel="author">By <span class="metaData">Sunny Gonnabathula</span></address>
+
+<h1>Quantum Computer-Proof Digital Signatures, Part 2 - Merkle Signatures</h1>
+
+
+
+<p>In my previous <a href="https://sunnyg.io/blog/lamport-signatures/">post</a>, I went over my <a rel="noopener" target="_blank" href="https://github.com/sunny-g/lamport-merkle.js">implementation</a> of a quantum-computer-proof digital signature algorithm known as the <a rel="noopener" target="_blank" href="https://en.wikipedia.org/wiki/Lamport_signature">Lamport signature scheme</a>. We also learned of its greatest weakness: the keypairs can only be used once. While we can't change this property of the algorithm, we can mitigate the weakness by chaining multiple Lamport keys together into a <a rel="noopener" target="_blank" href="https://en.wikipedia.org/wiki/Merkle_tree">Merkle tree</a>.</p>
+<h2 id="keypair-structure">Keypair Structure</h2>
+<p>A Merkle tree is just a <a rel="noopener" target="_blank" href="https://en.wikipedia.org/wiki/Tree_%28data_structure%29">tree</a> where each node's value is the hash of its children's values. The top (or root) node has the interesting property of implicitly containing the information of the entire tree since every node's value implicitly contains the values of if it's children.</p>
+<p>So with this in mind, we will start by generating a Lamport keypair for every message we may want to sign with this key tree (the variable <code>keyNum</code>). We then generate the hash of each keypair's public key and store these hashes in our tree (along with the keypairs and other useful information like the <code>size</code>, <code>numOfLevels</code> in the tree, and the <code>topHash</code>, which is effectively our key tree's public key).</p>
+<pre data-lang="js" style="background-color:#2b303b;color:#c0c5ce;" class="language-js "><code class="language-js" data-lang="js"><span style="color:#b48ead;">var </span><span style="color:#8fa1b3;">MerkleKeyTree </span><span>= </span><span style="color:#b48ead;">function</span><span>(</span><span style="color:#bf616a;">keyNum</span><span>) {
+</span><span>  </span><span style="color:#bf616a;">this</span><span>.size = </span><span style="color:#bf616a;">keyNum </span><span>|| </span><span style="color:#bf616a;">KEYNUM</span><span>;
+</span><span>  </span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">_leaves </span><span>= [];
+</span><span>  </span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">usedKeyCount </span><span>= </span><span style="color:#d08770;">0</span><span>;
+</span><span>  </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">firstRow </span><span>= [];
+</span><span>  </span><span style="color:#b48ead;">for </span><span>(</span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">leafNum </span><span>= </span><span style="color:#d08770;">0</span><span>; </span><span style="color:#bf616a;">leafNum </span><span>&lt; </span><span style="color:#bf616a;">this</span><span>.size; </span><span style="color:#bf616a;">leafNum</span><span>++) {
+</span><span>    </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">keypair </span><span>= new LamportKeypair();
+</span><span>    </span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">_leaves</span><span>.</span><span style="color:#96b5b4;">push</span><span>(</span><span style="color:#bf616a;">keypair</span><span>);
+</span><span>    </span><span style="color:#bf616a;">firstRow</span><span>.</span><span style="color:#96b5b4;">push</span><span>( </span><span style="color:#8fa1b3;">hash</span><span>(</span><span style="color:#bf616a;">keypair</span><span>.</span><span style="color:#bf616a;">pubKey</span><span>) );
+</span><span>  }
+</span><span>  </span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">levels </span><span>= [</span><span style="color:#bf616a;">firstRow</span><span>];
+</span><span>
+</span><span>  </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">levels </span><span>= Math.</span><span style="color:#96b5b4;">ceil</span><span>(Math.</span><span style="color:#96b5b4;">log2</span><span>(</span><span style="color:#bf616a;">this</span><span>.size));
+</span><span>  </span><span style="color:#b48ead;">for </span><span>(</span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">i </span><span>= </span><span style="color:#d08770;">1</span><span>; </span><span style="color:#bf616a;">i </span><span>&lt;= </span><span style="color:#bf616a;">levels</span><span>; </span><span style="color:#bf616a;">i</span><span>++) {
+</span><span>    </span><span style="color:#65737e;">// for each level in the tree starting w/ 1 above the bottom
+</span><span>    </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">curRow </span><span>= [];
+</span><span>    </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">prevRow </span><span>= </span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">levels</span><span>[</span><span style="color:#bf616a;">i</span><span>-</span><span style="color:#d08770;">1</span><span>];
+</span><span>    </span><span style="color:#b48ead;">for </span><span>(</span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">k </span><span>= </span><span style="color:#d08770;">0</span><span>; </span><span style="color:#bf616a;">k </span><span>&lt; </span><span style="color:#bf616a;">prevRow</span><span>.length; </span><span style="color:#bf616a;">k </span><span>+= </span><span style="color:#d08770;">2</span><span>) {
+</span><span>      </span><span style="color:#65737e;">// for each hash in the previous row
+</span><span>      </span><span style="color:#65737e;">// hash it and the next hash&#39;s values
+</span><span>      </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">h </span><span>= </span><span style="color:#8fa1b3;">hash</span><span>(</span><span style="color:#bf616a;">prevRow</span><span>[</span><span style="color:#bf616a;">k</span><span>] + </span><span style="color:#bf616a;">prevRow</span><span>[</span><span style="color:#bf616a;">k</span><span>+</span><span style="color:#d08770;">1</span><span>]);
+</span><span>      </span><span style="color:#bf616a;">curRow</span><span>.</span><span style="color:#96b5b4;">push</span><span>(</span><span style="color:#bf616a;">h</span><span>);
+</span><span>    }
+</span><span>    </span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">levels</span><span>[</span><span style="color:#bf616a;">i</span><span>] = </span><span style="color:#bf616a;">curRow</span><span>;
+</span><span>  }
+</span><span>
+</span><span>  </span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">numOfLevels </span><span>= </span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">levels</span><span>.length;
+</span><span>  </span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">numOfKeys </span><span>= </span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">_leaves</span><span>.length;
+</span><span>  </span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">topHash </span><span>= </span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">levels</span><span>[</span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">levels</span><span>.length - </span><span style="color:#d08770;">1</span><span>][</span><span style="color:#d08770;">0</span><span>];
+</span><span>};
+</span></code></pre>
+<p>So here's what the Merkle tree in our key tree looks like, with each array containing the hashes of its two child hashes:</p>
+<p><img src="../2014-12-13-merkle-tree.png" alt="A sample Merkle key tree" /></p>
+<h2 id="message-signing">Message Signing</h2>
+<p>To use this tree to sign a message, we have to:</p>
+<ol>
+<li>Select a keypair (<code>leaf</code>) and use it to generate a signature.</li>
+<li>Publish the signature, along with the path of hashes at each level necessary to recreate the <code>topHash</code></li>
+</ol>
+<p>We must publish the path so that once the user verifies that the Lamport keypair we used was legitimate, they can hash the public key + sibling public key, and continue hashing these hashes + their siblings until they reach the <code>topHash</code>.</p>
+<pre data-lang="js" style="background-color:#2b303b;color:#c0c5ce;" class="language-js "><code class="language-js" data-lang="js"><span style="color:#ebcb8b;">MerkleKeyTree</span><span>.prototype.</span><span style="color:#8fa1b3;">sign </span><span>= </span><span style="color:#b48ead;">function</span><span>(</span><span style="color:#bf616a;">msg</span><span>) {
+</span><span>  </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">finalSig </span><span>= {};
+</span><span>  </span><span style="color:#b48ead;">if </span><span>(</span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">usedKeyCount </span><span>=== </span><span style="color:#bf616a;">this</span><span>.size - </span><span style="color:#d08770;">1</span><span>) {
+</span><span>    </span><span style="color:#b48ead;">throw </span><span>new Error(&#39;</span><span style="color:#a3be8c;">This is your last keypair on this tree)</span><span style="background-color:#bf616a;color:#2b303b;">;</span><span>
+</span><span>  }
+</span><span>  </span><span style="color:#65737e;">// select the first unused keypair
+</span><span>  </span><span style="color:#8fa1b3;">for </span><span>(</span><span style="color:#bf616a;">var i </span><span>= </span><span style="color:#d08770;">0</span><span>; </span><span style="color:#bf616a;">i </span><span>&lt; </span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">numOfKeys</span><span>; </span><span style="color:#bf616a;">i</span><span>++) {
+</span><span>    </span><span style="color:#8fa1b3;">if </span><span>(!this._leaves[</span><span style="color:#bf616a;">i</span><span>].used) {
+</span><span>      </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">randomKeypair </span><span>= </span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">_leaves</span><span>[</span><span style="color:#bf616a;">i</span><span>];
+</span><span>      </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">randomKeypairIndex </span><span>= </span><span style="color:#bf616a;">i</span><span>;
+</span><span>      </span><span style="color:#b48ead;">break</span><span>;
+</span><span>    }
+</span><span>  }
+</span><span>  </span><span style="color:#bf616a;">finalSig</span><span>.</span><span style="color:#bf616a;">keyPairId </span><span>= </span><span style="color:#bf616a;">randomKeypairIndex</span><span>;
+</span><span>  </span><span style="color:#bf616a;">finalSig</span><span>.</span><span style="color:#bf616a;">pubKey </span><span>= </span><span style="color:#bf616a;">randomKeypair</span><span>.</span><span style="color:#bf616a;">pubKey</span><span>;
+</span><span>  </span><span style="color:#bf616a;">finalSig</span><span>.</span><span style="color:#bf616a;">message </span><span>= </span><span style="color:#bf616a;">msg</span><span>;
+</span><span>  </span><span style="color:#bf616a;">finalSig</span><span>.</span><span style="color:#bf616a;">signature </span><span>= </span><span style="color:#bf616a;">randomKeypair</span><span>.</span><span style="color:#8fa1b3;">sign</span><span>(</span><span style="color:#bf616a;">msg</span><span>);
+</span><span>  </span><span style="color:#65737e;">// create the path of the hashes needed to get from the
+</span><span>    </span><span style="color:#65737e;">// published keypair to the topHash
+</span><span>  </span><span style="color:#bf616a;">finalSig</span><span>.</span><span style="color:#bf616a;">path </span><span>= [];
+</span><span>  </span><span style="color:#bf616a;">var curLevel </span><span>= </span><span style="color:#d08770;">0</span><span>;
+</span><span>  </span><span style="color:#bf616a;">var idx </span><span>= </span><span style="color:#bf616a;">randomKeypairIndex</span><span>;
+</span><span>  </span><span style="color:#8fa1b3;">while </span><span>(</span><span style="color:#bf616a;">curLevel </span><span>&lt; </span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">numOfLevels</span><span>) {
+</span><span>    </span><span style="color:#8fa1b3;">if </span><span>(</span><span style="color:#bf616a;">idx</span><span> % 2) {
+</span><span>      </span><span style="color:#bf616a;">finalSig</span><span>.</span><span style="color:#bf616a;">path</span><span>.</span><span style="color:#96b5b4;">push</span><span>(</span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">levels</span><span>[</span><span style="color:#bf616a;">curLevel</span><span>][</span><span style="color:#bf616a;">idx </span><span>- </span><span style="color:#d08770;">1</span><span>])
+</span><span>    } else {
+</span><span>      finalSig.path.push(this.levels[</span><span style="color:#bf616a;">curLevel</span><span>][</span><span style="color:#bf616a;">idx </span><span>+ </span><span style="color:#d08770;">1</span><span>])
+</span><span>    }
+</span><span>    curLevel++;
+</span><span>    idx = parentIdx(idx);
+</span><span>  }
+</span><span style="color:#65737e;">// publish the signature, set key properties
+</span><span>  finalSig.path[</span><span style="color:#bf616a;">finalSig</span><span>.</span><span style="color:#bf616a;">path</span><span>.length - </span><span style="color:#d08770;">1</span><span>] = this.topHash;
+</span><span>  randomKeypair.used = true;
+</span><span>  this.usedKeyCount++;
+</span><span>  return finalSig;
+</span><span>};
+</span></code></pre>
+<p>Here's an example signature of a message signed by the key tree above:</p>
+<p><img src="../2014-12-13-merkle-sig.png" alt="A sample signature" /></p>
+<h2 id="message-verification">Message Verification</h2>
+<p>To verify a signature, we must first verify <code>signature</code> against <code>pubKey</code>, just as we would with a traditional Lamport key. Then, we'll have to hash the <code>pubKey</code> and hash the result (in the right order) with its sibling key's hash, and keep taking the output and hashing it with its sibling in the next level of the key tree until we end up with one, lone hash.</p>
+<pre data-lang="js" style="background-color:#2b303b;color:#c0c5ce;" class="language-js "><code class="language-js" data-lang="js"><span style="color:#ebcb8b;">MerkleKeyTree</span><span>.prototype.</span><span style="color:#8fa1b3;">verify </span><span>= </span><span style="color:#b48ead;">function</span><span>(</span><span style="color:#bf616a;">sigObj</span><span>) {
+</span><span>  </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">idx </span><span>= </span><span style="color:#bf616a;">sigObj</span><span>.</span><span style="color:#bf616a;">keyPairId</span><span>;
+</span><span>  </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">lamport </span><span>= </span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">_leaves</span><span>[</span><span style="color:#bf616a;">idx</span><span>];
+</span><span>  </span><span style="color:#65737e;">// if this is a valid Lamport signature...
+</span><span>  </span><span style="color:#b48ead;">if </span><span>(</span><span style="color:#bf616a;">lamport</span><span>.</span><span style="color:#8fa1b3;">verify</span><span>(</span><span style="color:#bf616a;">sigObj</span><span>.</span><span style="color:#bf616a;">message</span><span>, </span><span style="color:#bf616a;">sigObj</span><span>.</span><span style="color:#bf616a;">signature</span><span>)) {
+</span><span>
+</span><span>    </span><span style="color:#65737e;">// ... calculate the sibling hashes until you reach the topHash
+</span><span>    </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">h </span><span>= </span><span style="color:#8fa1b3;">hash</span><span>(</span><span style="color:#bf616a;">sigObj</span><span>.</span><span style="color:#bf616a;">pubKey</span><span>);
+</span><span>    </span><span style="color:#b48ead;">for </span><span>(</span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">i </span><span>= </span><span style="color:#d08770;">0</span><span>; </span><span style="color:#bf616a;">i </span><span>&lt; </span><span style="color:#bf616a;">sigObj</span><span>.</span><span style="color:#bf616a;">path</span><span>.length - </span><span style="color:#d08770;">1</span><span>; </span><span style="color:#bf616a;">i</span><span>++) {
+</span><span>      </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">auth </span><span>= </span><span style="color:#bf616a;">sigObj</span><span>.</span><span style="color:#bf616a;">path</span><span>[</span><span style="color:#bf616a;">i</span><span>];
+</span><span>      </span><span style="color:#b48ead;">if </span><span>(</span><span style="color:#bf616a;">idx </span><span>% </span><span style="color:#d08770;">2</span><span>) {
+</span><span>        </span><span style="color:#bf616a;">h </span><span>= </span><span style="color:#8fa1b3;">hash</span><span>(</span><span style="color:#bf616a;">auth </span><span>+ </span><span style="color:#bf616a;">h</span><span>);
+</span><span>      } </span><span style="color:#b48ead;">else </span><span>{
+</span><span>        </span><span style="color:#bf616a;">h </span><span>= </span><span style="color:#8fa1b3;">hash</span><span>(</span><span style="color:#bf616a;">h </span><span>+ </span><span style="color:#bf616a;">auth</span><span>);
+</span><span>      }
+</span><span>      </span><span style="color:#bf616a;">idx </span><span>= </span><span style="color:#8fa1b3;">parentIdx</span><span>(</span><span style="color:#bf616a;">idx</span><span>); </span><span style="color:#65737e;">// gets the parent level hash index
+</span><span>    }
+</span><span>    </span><span style="color:#b48ead;">if </span><span>(</span><span style="color:#bf616a;">h </span><span>=== </span><span style="color:#bf616a;">sigObj</span><span>.</span><span style="color:#bf616a;">path</span><span>[</span><span style="color:#bf616a;">sigObj</span><span>.</span><span style="color:#bf616a;">path</span><span>.length - </span><span style="color:#d08770;">1</span><span>]) { </span><span style="color:#b48ead;">return </span><span style="color:#d08770;">true</span><span>; }
+</span><span>  }
+</span><span>  </span><span style="color:#b48ead;">return </span><span style="color:#d08770;">false</span><span>;
+</span><span>};
+</span></code></pre>
+<p>If at the end of this process we end up with the string at the end of our <code>path</code> array (which is also our <code>topHash</code>), we'll know that the key used to sign the message belongs to this key tree and this <code>topHash</code> (which should match up with the <code>topHash</code> of the expected owner and message signer).</p>
+<p>In conclusion, with this signature scheme, we've allowed a user to generate one large key tree that can be used to sign arbitrarily many messages (including newer keytrees) while only marginally increasing the signature size. While this can't be used for secretly encrypting messages, in many applications (e.g. authenticating cryptocurrency transactions), a signature scheme is just enough.</p>
+<p>I hope both of these posts have shed some light on how wild yet understandable some cryptographic concepts can be. You can always check out my repo <a rel="noopener" target="_blank" href="https://github.com/sunny-g/lamport-merkle.js">here</a> and as always, thanks for reading!</p>
+
+
+<p class="tagsData">
+  
+  
+  <a href="/tags/cryptography">&#47;cryptography&#47;</a>
+  
+  <a href="/tags/merkle">&#47;merkle&#47;</a>
+  
+  <a href="/tags/digital-signatures">&#47;digital signatures&#47;</a>
+  
+  
+</p>
+
+      </main>
+      <footer>
+          <hr>
+<div class=footContainer>
+  <div class="footLeft">
+    <p>Licensed under <a target="_blank" rel="noopener noreferrer" href="https://fr.wikipedia.org/wiki/Licence_MIT">MIT</a><br>
+      Built with <a target="_blank" rel="noopener noreferrer" href="https://www.getzola.org">Zola</a> using <a target="_blank" rel="noopener noreferrer" href="https://github.com/Speyll/anemone">anemone</a> theme &amp; <a target="_blank" rel="noopener noreferrer" href="https://github.com/Speyll/veqev">veqev</a> colors.<br>
+    </p>
+  </div>
+  
+  <div class="footRight">
+    <a class="icons__background" target="_blank" rel="noopener noreferrer" href="https://sunnyg.io/atom.xml" title="Subscribe via RSS for updates."><svg class="icons icons__background"><use href="https://sunnyg.io/icons.svg#rss"></use></svg></a>
+  </div>
+  
+</div>
+      </footer>
+    </div>
+</body>
+</html>

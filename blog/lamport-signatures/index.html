@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+<meta content="text/html; charset=UTF-8" http-equiv="content-type"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+<meta name="robots" content="index, follow">
+
+
+
+
+
+
+
+
+
+
+
+
+<title>Quantum Computer-Proof Digital Signatures, Part 1 - Lamport Signatures</title>
+
+
+
+<meta name="title" content="Quantum Computer-Proof Digital Signatures, Part 1 - Lamport Signatures">
+
+
+<meta name="author" content="Sunny Gonnabathula">
+
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://sunnyg.io/blog/lamport-signatures/">
+
+<meta property="og:site_name" content="">
+
+
+<meta property="og:title" content="Quantum Computer-Proof Digital Signatures, Part 1 - Lamport Signatures">
+
+
+
+
+
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:url" content="https://sunnyg.io/blog/lamport-signatures/">
+
+<meta property="twitter:title" content="Quantum Computer-Proof Digital Signatures, Part 1 - Lamport Signatures">
+
+
+
+
+<link rel="canonical" href="https://sunnyg.io/blog/lamport-signatures/">
+
+
+
+
+<link rel="alternate" type="application/atom+xml" title="RSS" href="https://sunnyg.io/atom.xml"> 
+
+
+
+<link rel="stylesheet" href="https://sunnyg.io/css/style.css"/>
+
+<script src="https://sunnyg.io/js/script.js" defer></script>
+
+
+</head>
+<body>
+    <div class="wrapper">
+      <header>
+          
+
+  
+
+
+  <nav class="navBar">
+    
+      <a href="&#x2F;" class="">
+        
+        Home
+      </a>
+    
+      <a href="&#x2F;blog" class="">
+        
+        Blog
+      </a>
+    
+      <a href="https:&#x2F;&#x2F;github.com&#x2F;sunny-g" class="">
+        
+        Github
+      </a>
+    
+
+  <div class="themeSwitch">
+    
+    <button class="themeButton dark" onclick="setTheme('dark')" title="Dark mode"><svg class="icons icons__background"><use href="https://sunnyg.io/icons.svg#darkMode"></use></svg></button>
+    <button class="themeButton light" onclick="setTheme('light')" title="Light mode"><svg class="icons icons__background"><use href="https://sunnyg.io/icons.svg#lightMode"></use></svg></button>
+    
+  </div>
+</nav>
+
+
+      </header>
+      <main>
+          
+<div><a href="..">..</a>/<span class="metaData">lamport-signatures</span></div>
+<time datetime="2014-12-07">Published on: <span class="metaData">2014-12-07</span></time>
+
+<address rel="author">By <span class="metaData">Sunny Gonnabathula</span></address>
+
+<h1>Quantum Computer-Proof Digital Signatures, Part 1 - Lamport Signatures</h1>
+
+
+
+<p>For my MVP (minimal viable product) project at <a rel="noopener" target="_blank" href="http://hackreactor.com">Hack Reactor</a>, I developed a browser <a rel="noopener" target="_blank" href="https://github.com/sunny-g/lamport-merkle.js">library</a> that implements two quantum-computer-proof digital signature algorithms known as the <a rel="noopener" target="_blank" href="https://en.wikipedia.org/wiki/Lamport_signature">Lamport</a> and <a rel="noopener" target="_blank" href="https://en.wikipedia.org/wiki/Merkle_signature_scheme">Merkle signature schemes</a>. In this post, I'll be going over the Lamport scheme and how it works.</p>
+<h2 id="keypair-structure">Keypair Structure</h2>
+<p>Unlike keypairs of traditional encryption algorithms, Lamport keys are not mathematically tied to one another nor are they derived from hard-to-solve problems like prime factorization (this is in fact the reason this algorithm is quantum computer-proof: so long as our secure hashing function can't have solving its inverse optimized by quantum computing, we should be safe). Our private key then is simply composed of 256 pairs of 32 byte numbers while the public key is made up of the hashes of each number:</p>
+<pre data-lang="js" style="background-color:#2b303b;color:#c0c5ce;" class="language-js "><code class="language-js" data-lang="js"><span style="color:#b48ead;">var </span><span style="color:#8fa1b3;">LamportKeypair </span><span>= </span><span style="color:#b48ead;">function</span><span>() {
+</span><span>  </span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">_privKey </span><span>= [];
+</span><span>  </span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">pubKey </span><span>= [];
+</span><span>  </span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">used </span><span>= </span><span style="color:#d08770;">false</span><span>;
+</span><span>
+</span><span>  </span><span style="color:#b48ead;">for </span><span>(</span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">i </span><span>= </span><span style="color:#d08770;">0</span><span>; </span><span style="color:#bf616a;">i </span><span>&lt; </span><span style="color:#d08770;">256</span><span>; </span><span style="color:#bf616a;">i</span><span>++) {
+</span><span>    </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">num1 </span><span>= </span><span style="color:#8fa1b3;">random32ByteString</span><span>();
+</span><span>    </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">num2 </span><span>= </span><span style="color:#8fa1b3;">random32ByteString</span><span>();
+</span><span>    </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">hash1 </span><span>= </span><span style="color:#8fa1b3;">hash</span><span>(</span><span style="color:#bf616a;">num1</span><span>);
+</span><span>    </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">hash2 </span><span>= </span><span style="color:#8fa1b3;">hash</span><span>(</span><span style="color:#bf616a;">num2</span><span>);
+</span><span>
+</span><span>    </span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">_privKey</span><span>.</span><span style="color:#96b5b4;">push</span><span>([</span><span style="color:#bf616a;">num1</span><span>, </span><span style="color:#bf616a;">num2</span><span>]);
+</span><span>    </span><span style="color:#bf616a;">this</span><span>.</span><span style="color:#bf616a;">pubKey</span><span>.</span><span style="color:#96b5b4;">push</span><span>([</span><span style="color:#bf616a;">hash1</span><span>, </span><span style="color:#bf616a;">hash2</span><span>]);
+</span><span>  }
+</span><span>};
+</span></code></pre>
+<h2 id="message-signing">Message Signing</h2>
+<p>To sign a message with this key, we only have to do two things:</p>
+<p>Generate a 32 byte (256 bit) hash of the message.
+For each bit in the message, publish either the 1st or 2nd random number of that bit's corresponding pair of numbers within our private key.
+These steps end up looking like this:</p>
+<pre data-lang="js" style="background-color:#2b303b;color:#c0c5ce;" class="language-js "><code class="language-js" data-lang="js"><span style="color:#ebcb8b;">LamportKeypair</span><span>.prototype.</span><span style="color:#8fa1b3;">sign </span><span>= </span><span style="color:#b48ead;">function</span><span>(</span><span style="color:#bf616a;">msg</span><span>) {
+</span><span>  </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">msgHash </span><span>= </span><span style="color:#8fa1b3;">hash</span><span>(</span><span style="color:#bf616a;">msg</span><span>);
+</span><span>  </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">signature </span><span>= [];
+</span><span>
+</span><span>  </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">that </span><span>= </span><span style="color:#bf616a;">this</span><span>;
+</span><span>  </span><span style="color:#65737e;">// this iterates over every bit in a hash string
+</span><span>  </span><span style="color:#65737e;">// callback takes the bit and its index in the string
+</span><span>  </span><span style="color:#8fa1b3;">eachBit</span><span>(</span><span style="color:#bf616a;">msgHash</span><span>, </span><span style="color:#b48ead;">function</span><span>(</span><span style="color:#bf616a;">bit</span><span>, </span><span style="color:#bf616a;">bitIdx</span><span>) {
+</span><span>    </span><span style="color:#bf616a;">signature</span><span>.</span><span style="color:#96b5b4;">push</span><span>( </span><span style="color:#bf616a;">that</span><span>.</span><span style="color:#bf616a;">_privKey</span><span>[</span><span style="color:#bf616a;">bitIdx</span><span>][</span><span style="color:#bf616a;">bit</span><span>] );
+</span><span>  });
+</span><span>  </span><span style="color:#b48ead;">return </span><span style="color:#bf616a;">signature</span><span>;
+</span><span>};
+</span></code></pre>
+<p>But wait, if we publish the numbers in our private key, doesn't that defeat the purpose of making it private?</p>
+<p>Well yes, and this highlights the usability weakness of this signature scheme: we can only use each keypair once. The workaround for this is to incorporate multiple keys into a Merkle tree, but that's a topic for a later post.</p>
+<h2 id="message-verification">Message Verification</h2>
+<p>To verify the message, all we need to do now is check to see that every number in our signature hashes to one of the values in its corresponding pair in our public key:</p>
+<pre data-lang="js" style="background-color:#2b303b;color:#c0c5ce;" class="language-js "><code class="language-js" data-lang="js"><span style="color:#ebcb8b;">LamportKeypair</span><span>.prototype.</span><span style="color:#8fa1b3;">verify </span><span>= </span><span style="color:#b48ead;">function</span><span>(</span><span style="color:#bf616a;">msg</span><span>, </span><span style="color:#bf616a;">signature</span><span>) {
+</span><span>  </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">msgHash </span><span>= </span><span style="color:#8fa1b3;">hash</span><span>(</span><span style="color:#bf616a;">msg</span><span>);
+</span><span>  </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">authentic </span><span>= </span><span style="color:#d08770;">true</span><span>;
+</span><span>
+</span><span>  </span><span style="color:#b48ead;">var </span><span style="color:#bf616a;">that </span><span>= </span><span style="color:#bf616a;">this</span><span>;
+</span><span>  </span><span style="color:#8fa1b3;">eachBit</span><span>(</span><span style="color:#bf616a;">msgHash</span><span>, </span><span style="color:#b48ead;">function</span><span>(</span><span style="color:#bf616a;">bit</span><span>, </span><span style="color:#bf616a;">bitIdx</span><span>) {
+</span><span>    </span><span style="color:#b48ead;">if </span><span>(</span><span style="color:#8fa1b3;">hash</span><span>(</span><span style="color:#bf616a;">signature</span><span>[</span><span style="color:#bf616a;">bitIdx</span><span>]) !== </span><span style="color:#bf616a;">that</span><span>.</span><span style="color:#bf616a;">pubKey</span><span>[</span><span style="color:#bf616a;">bitIdx</span><span>][</span><span style="color:#bf616a;">bit</span><span>]) {
+</span><span>      </span><span style="color:#bf616a;">authentic </span><span>= </span><span style="color:#d08770;">false</span><span>;
+</span><span>    }
+</span><span>  });
+</span><span>  </span><span style="color:#b48ead;">return </span><span style="color:#bf616a;">authentic</span><span>;
+</span><span>};
+</span></code></pre>
+<h1 id="why-this-works">Why This Works</h1>
+<p>To be a valid digital signature algorithm, we have to satisfy one main condition (and maybe a few others that I'm forgetting): <em>the public key cannot leak any information about the private key</em>. Since our public key only contains the hashes of these random numbers (and since hash functions can't be run in reverse, that is, from a hash tell us the input), we satisfy that condition and can now know with certainty one thing: <strong>the only person who could have published the numbers in the signature and the hashes in the public key is the same person who possessed all of the random numbers of the private key in the first place.</strong></p>
+<p>I hope this post has piqued your interest in non-traditional encryption schemes; I have a <a href="https://sunnyg.io/blog/merkle-signatures/">companion post</a> about how Merkle trees can mitigate the one-time-expiry property of Lamport signatures. If you want to check out my repo, you can find it (and star it hopefully?) <a rel="noopener" target="_blank" href="https://github.com/sunny-g/lamport-merkle.js">here</a>. Thanks for reading!</p>
+
+
+<p class="tagsData">
+  
+  
+  <a href="/tags/cryptography">&#47;cryptography&#47;</a>
+  
+  <a href="/tags/lamport">&#47;lamport&#47;</a>
+  
+  <a href="/tags/digital-signatures">&#47;digital signatures&#47;</a>
+  
+  
+</p>
+
+      </main>
+      <footer>
+          <hr>
+<div class=footContainer>
+  <div class="footLeft">
+    <p>Licensed under <a target="_blank" rel="noopener noreferrer" href="https://fr.wikipedia.org/wiki/Licence_MIT">MIT</a><br>
+      Built with <a target="_blank" rel="noopener noreferrer" href="https://www.getzola.org">Zola</a> using <a target="_blank" rel="noopener noreferrer" href="https://github.com/Speyll/anemone">anemone</a> theme &amp; <a target="_blank" rel="noopener noreferrer" href="https://github.com/Speyll/veqev">veqev</a> colors.<br>
+    </p>
+  </div>
+  
+  <div class="footRight">
+    <a class="icons__background" target="_blank" rel="noopener noreferrer" href="https://sunnyg.io/atom.xml" title="Subscribe via RSS for updates."><svg class="icons icons__background"><use href="https://sunnyg.io/icons.svg#rss"></use></svg></a>
+  </div>
+  
+</div>
+      </footer>
+    </div>
+</body>
+</html>
