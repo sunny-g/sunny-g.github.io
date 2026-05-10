@@ -22,7 +22,7 @@ var MerkleKeyTree = function(keyNum) {
   for (var leafNum = 0; leafNum < this.size; leafNum++) {
     var keypair = new LamportKeypair();
     this._leaves.push(keypair);
-    firstRow.push( hash(keypair.pubKey) );
+    firstRow.push(hash(keypair.pubKey));
   }
   this.levels = [firstRow];
 
@@ -30,11 +30,11 @@ var MerkleKeyTree = function(keyNum) {
   for (var i = 1; i <= levels; i++) {
     // for each level in the tree starting w/ 1 above the bottom
     var curRow = [];
-    var prevRow = this.levels[i-1];
+    var prevRow = this.levels[i - 1];
     for (var k = 0; k < prevRow.length; k += 2) {
       // for each hash in the previous row
       // hash it and the next hash's values
-      var h = hash(prevRow[k] + prevRow[k+1]);
+      var h = hash(prevRow[k] + prevRow[k + 1]);
       curRow.push(h);
     }
     this.levels[i] = curRow;
@@ -48,7 +48,7 @@ var MerkleKeyTree = function(keyNum) {
 
 So here's what the Merkle tree in our key tree looks like, with each array containing the hashes of its two child hashes:
 
-![A sample Merkle key tree](../2014-12-13-merkle-tree.png)
+![A sample Merkle key tree](../attachments/2014-12-13-merkle-tree.png)
 
 ## Message Signing
 
@@ -101,19 +101,18 @@ MerkleKeyTree.prototype.sign = function(msg) {
 
 Here's an example signature of a message signed by the key tree above:
 
-![A sample signature](../2014-12-13-merkle-sig.png)
+![A sample signature](../attachments/2014-12-13-merkle-sig.png)
 
 ## Message Verification
 
 To verify a signature, we must first verify `signature` against `pubKey`, just as we would with a traditional Lamport key. Then, we'll have to hash the `pubKey` and hash the result (in the right order) with its sibling key's hash, and keep taking the output and hashing it with its sibling in the next level of the key tree until we end up with one, lone hash.
 
 ```js
-MerkleKeyTree.prototype.verify = function(sigObj) {
+MerkleKeyTree.prototype.verify = function (sigObj) {
   var idx = sigObj.keyPairId;
   var lamport = this._leaves[idx];
   // if this is a valid Lamport signature...
   if (lamport.verify(sigObj.message, sigObj.signature)) {
-
     // ... calculate the sibling hashes until you reach the topHash
     var h = hash(sigObj.pubKey);
     for (var i = 0; i < sigObj.path.length - 1; i++) {
@@ -125,7 +124,9 @@ MerkleKeyTree.prototype.verify = function(sigObj) {
       }
       idx = parentIdx(idx); // gets the parent level hash index
     }
-    if (h === sigObj.path[sigObj.path.length - 1]) { return true; }
+    if (h === sigObj.path[sigObj.path.length - 1]) {
+      return true;
+    }
   }
   return false;
 };
