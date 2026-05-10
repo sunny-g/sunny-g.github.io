@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>sunnyg.io - merkle</title>
+      <link>https://sunnyg.io</link>
+      <description></description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://sunnyg.io/tags/merkle/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Sat, 13 Dec 2014 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>Quantum Computer-Proof Digital Signatures, Part 2 - Merkle Signatures</title>
+          <pubDate>Sat, 13 Dec 2014 00:00:00 +0000</pubDate>
+          <author>Sunny Gonnabathula</author>
+          <link>https://sunnyg.io/blog/merkle-signatures/</link>
+          <guid>https://sunnyg.io/blog/merkle-signatures/</guid>
+          <description xml:base="https://sunnyg.io/blog/merkle-signatures/">&lt;p&gt;In my previous &lt;a href=&quot;https:&#x2F;&#x2F;sunnyg.io&#x2F;blog&#x2F;lamport-signatures&#x2F;&quot;&gt;post&lt;&#x2F;a&gt;, I went over my &lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;sunny-g&#x2F;lamport-merkle.js&quot;&gt;implementation&lt;&#x2F;a&gt; of a quantum-computer-proof digital signature algorithm known as the &lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Lamport_signature&quot;&gt;Lamport signature scheme&lt;&#x2F;a&gt;. We also learned of its greatest weakness: the keypairs can only be used once. While we can&#x27;t change this property of the algorithm, we can mitigate the weakness by chaining multiple Lamport keys together into a &lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Merkle_tree&quot;&gt;Merkle tree&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;keypair-structure&quot;&gt;Keypair Structure&lt;&#x2F;h2&gt;
+&lt;p&gt;A Merkle tree is just a &lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Tree_%28data_structure%29&quot;&gt;tree&lt;&#x2F;a&gt; where each node&#x27;s value is the hash of its children&#x27;s values. The top (or root) node has the interesting property of implicitly containing the information of the entire tree since every node&#x27;s value implicitly contains the values of if it&#x27;s children.&lt;&#x2F;p&gt;
+&lt;p&gt;So with this in mind, we will start by generating a Lamport keypair for every message we may want to sign with this key tree (the variable &lt;code&gt;keyNum&lt;&#x2F;code&gt;). We then generate the hash of each keypair&#x27;s public key and store these hashes in our tree (along with the keypairs and other useful information like the &lt;code&gt;size&lt;&#x2F;code&gt;, &lt;code&gt;numOfLevels&lt;&#x2F;code&gt; in the tree, and the &lt;code&gt;topHash&lt;&#x2F;code&gt;, which is effectively our key tree&#x27;s public key).&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;js&quot;&gt;var MerkleKeyTree = function(keyNum) {
+  this.size = keyNum || KEYNUM;
+  this._leaves = [];
+  this.usedKeyCount = 0;
+  var firstRow = [];
+  for (var leafNum = 0; leafNum &amp;lt; this.size; leafNum++) {
+    var keypair = new LamportKeypair();
+    this._leaves.push(keypair);
+    firstRow.push(hash(keypair.pubKey));
+  }
+  this.levels = [firstRow];
+
+  var levels = Math.ceil(Math.log2(this.size));
+  for (var i = 1; i &amp;lt;= levels; i++) {
+    &#x2F;&#x2F; for each level in the tree starting w&#x2F; 1 above the bottom
+    var curRow = [];
+    var prevRow = this.levels[i - 1];
+    for (var k = 0; k &amp;lt; prevRow.length; k += 2) {
+      &#x2F;&#x2F; for each hash in the previous row
+      &#x2F;&#x2F; hash it and the next hash&amp;#39;s values
+      var h = hash(prevRow[k] + prevRow[k + 1]);
+      curRow.push(h);
+    }
+    this.levels[i] = curRow;
+  }
+
+  this.numOfLevels = this.levels.length;
+  this.numOfKeys = this._leaves.length;
+  this.topHash = this.levels[this.levels.length - 1][0];
+};
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;So here&#x27;s what the Merkle tree in our key tree looks like, with each array containing the hashes of its two child hashes:&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;..&#x2F;attachments&#x2F;2014-12-13-merkle-tree.png&quot; alt=&quot;A sample Merkle key tree&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;message-signing&quot;&gt;Message Signing&lt;&#x2F;h2&gt;
+&lt;p&gt;To use this tree to sign a message, we have to:&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;Select a keypair (&lt;code&gt;leaf&lt;&#x2F;code&gt;) and use it to generate a signature.&lt;&#x2F;li&gt;
+&lt;li&gt;Publish the signature, along with the path of hashes at each level necessary to recreate the &lt;code&gt;topHash&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;We must publish the path so that once the user verifies that the Lamport keypair we used was legitimate, they can hash the public key + sibling public key, and continue hashing these hashes + their siblings until they reach the &lt;code&gt;topHash&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;js&quot;&gt;MerkleKeyTree.prototype.sign = function(msg) {
+  var finalSig = {};
+  if (this.usedKeyCount === this.size - 1) {
+    throw new Error(&amp;#39;This is your last keypair on this tree);
+  }
+  &#x2F;&#x2F; select the first unused keypair
+  for (var i = 0; i &amp;lt; this.numOfKeys; i++) {
+    if (!this._leaves[i].used) {
+      var randomKeypair = this._leaves[i];
+      var randomKeypairIndex = i;
+      break;
+    }
+  }
+  finalSig.keyPairId = randomKeypairIndex;
+  finalSig.pubKey = randomKeypair.pubKey;
+  finalSig.message = msg;
+  finalSig.signature = randomKeypair.sign(msg);
+  &#x2F;&#x2F; create the path of the hashes needed to get from the
+    &#x2F;&#x2F; published keypair to the topHash
+  finalSig.path = [];
+  var curLevel = 0;
+  var idx = randomKeypairIndex;
+  while (curLevel &amp;lt; this.numOfLevels) {
+    if (idx % 2) {
+      finalSig.path.push(this.levels[curLevel][idx - 1])
+    } else {
+      finalSig.path.push(this.levels[curLevel][idx + 1])
+    }
+    curLevel++;
+    idx = parentIdx(idx);
+  }
+&#x2F;&#x2F; publish the signature, set key properties
+  finalSig.path[finalSig.path.length - 1] = this.topHash;
+  randomKeypair.used = true;
+  this.usedKeyCount++;
+  return finalSig;
+};
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Here&#x27;s an example signature of a message signed by the key tree above:&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;..&#x2F;attachments&#x2F;2014-12-13-merkle-sig.png&quot; alt=&quot;A sample signature&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;message-verification&quot;&gt;Message Verification&lt;&#x2F;h2&gt;
+&lt;p&gt;To verify a signature, we must first verify &lt;code&gt;signature&lt;&#x2F;code&gt; against &lt;code&gt;pubKey&lt;&#x2F;code&gt;, just as we would with a traditional Lamport key. Then, we&#x27;ll have to hash the &lt;code&gt;pubKey&lt;&#x2F;code&gt; and hash the result (in the right order) with its sibling key&#x27;s hash, and keep taking the output and hashing it with its sibling in the next level of the key tree until we end up with one, lone hash.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;js&quot;&gt;MerkleKeyTree.prototype.verify = function (sigObj) {
+  var idx = sigObj.keyPairId;
+  var lamport = this._leaves[idx];
+  &#x2F;&#x2F; if this is a valid Lamport signature...
+  if (lamport.verify(sigObj.message, sigObj.signature)) {
+    &#x2F;&#x2F; ... calculate the sibling hashes until you reach the topHash
+    var h = hash(sigObj.pubKey);
+    for (var i = 0; i &amp;lt; sigObj.path.length - 1; i++) {
+      var auth = sigObj.path[i];
+      if (idx % 2) {
+        h = hash(auth + h);
+      } else {
+        h = hash(h + auth);
+      }
+      idx = parentIdx(idx); &#x2F;&#x2F; gets the parent level hash index
+    }
+    if (h === sigObj.path[sigObj.path.length - 1]) {
+      return true;
+    }
+  }
+  return false;
+};
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;If at the end of this process we end up with the string at the end of our &lt;code&gt;path&lt;&#x2F;code&gt; array (which is also our &lt;code&gt;topHash&lt;&#x2F;code&gt;), we&#x27;ll know that the key used to sign the message belongs to this key tree and this &lt;code&gt;topHash&lt;&#x2F;code&gt; (which should match up with the &lt;code&gt;topHash&lt;&#x2F;code&gt; of the expected owner and message signer).&lt;&#x2F;p&gt;
+&lt;p&gt;In conclusion, with this signature scheme, we&#x27;ve allowed a user to generate one large key tree that can be used to sign arbitrarily many messages (including newer keytrees) while only marginally increasing the signature size. While this can&#x27;t be used for secretly encrypting messages, in many applications (e.g. authenticating cryptocurrency transactions), a signature scheme is just enough.&lt;&#x2F;p&gt;
+&lt;p&gt;I hope both of these posts have shed some light on how wild yet understandable some cryptographic concepts can be. You can always check out my repo &lt;a rel=&quot;noopener external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;sunny-g&#x2F;lamport-merkle.js&quot;&gt;here&lt;&#x2F;a&gt; and as always, thanks for reading!&lt;&#x2F;p&gt;
+</description>
+      </item>
+    </channel>
+</rss>

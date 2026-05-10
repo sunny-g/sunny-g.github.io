@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="robots" content="index, follow">
+        
+        <link rel="alternate" type="application/rss+xml" title="RSS" href="https://sunnyg.io/rss.xml">
+        
+        <title>sunnyg.io | Quantum Computer-Proof Digital Signatures, Part 2 - Merkle Signatures</title>
+
+        <link rel="preload" href="https://sunnyg.io/css/style.css" as="style">
+        <link rel="stylesheet" href="https://raw.githack.com/Speyll/suCSS/main/reset-min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://raw.githack.com/Speyll/suCSS/main/suCSS-min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://sunnyg.io/css/style.css">
+        <link rel="stylesheet" href="https://sunnyg.io/css/custom.css">
+
+        <!-- Add favicon with appropriate sizes -->
+        <link rel="icon" href="https:&#x2F;&#x2F;sunnyg.io/favicon.ico">
+        
+    </head>
+    <body>
+        
+        
+        
+        
+        <nav id="nav-bar">
+            
+            <a href="&#x2F;" class="">
+                
+                Home
+            </a>
+            
+            <a href="&#x2F;blog" class="">
+                
+                Blog
+            </a>
+            
+            <a href="https:&#x2F;&#x2F;github.com&#x2F;sunny-g" class="">
+                
+                Github
+            </a>
+            
+            <a href="https:&#x2F;&#x2F;www.linkedin.com&#x2F;in&#x2F;sunnygonna" class="">
+                
+                Linkedin
+            </a>
+            
+
+            <div class="theme-toggle" id="theme-toggle" role="button" tabindex="0" aria-label="Toggle theme"
+                data-icon-base="https://sunnyg.io/icons.svg"
+                data-icon-dark="#darkMode"
+                data-icon-light="#lightMode"
+                data-sound-src="https://sunnyg.io/click.ogg">
+                <svg class="icon">
+                    <use id="theme-icon"></use>
+                </svg>
+            </div>
+        </nav>
+
+        <main>
+            
+<article class="post">
+    <header class="post-header">
+        
+        <time datetime="2014-12-13">Published on:
+            <span class="accent-data">2014-12-13</span>
+        </time>
+        
+
+        
+
+        <h1>Quantum Computer-Proof Digital Signatures, Part 2 - Merkle Signatures</h1>
+    </header>
+
+
+
+    <div class="post-content">
+        <p>In my previous <a href="https://sunnyg.io/blog/lamport-signatures/">post</a>, I went over my <a rel="noopener external" target="_blank" href="https://github.com/sunny-g/lamport-merkle.js">implementation</a> of a quantum-computer-proof digital signature algorithm known as the <a rel="noopener external" target="_blank" href="https://en.wikipedia.org/wiki/Lamport_signature">Lamport signature scheme</a>. We also learned of its greatest weakness: the keypairs can only be used once. While we can't change this property of the algorithm, we can mitigate the weakness by chaining multiple Lamport keys together into a <a rel="noopener external" target="_blank" href="https://en.wikipedia.org/wiki/Merkle_tree">Merkle tree</a>.</p>
+<h2 id="keypair-structure">Keypair Structure</h2>
+<p>A Merkle tree is just a <a rel="noopener external" target="_blank" href="https://en.wikipedia.org/wiki/Tree_%28data_structure%29">tree</a> where each node's value is the hash of its children's values. The top (or root) node has the interesting property of implicitly containing the information of the entire tree since every node's value implicitly contains the values of if it's children.</p>
+<p>So with this in mind, we will start by generating a Lamport keypair for every message we may want to sign with this key tree (the variable <code>keyNum</code>). We then generate the hash of each keypair's public key and store these hashes in our tree (along with the keypairs and other useful information like the <code>size</code>, <code>numOfLevels</code> in the tree, and the <code>topHash</code>, which is effectively our key tree's public key).</p>
+<pre><code data-lang="js">var MerkleKeyTree = function(keyNum) {
+  this.size = keyNum || KEYNUM;
+  this._leaves = [];
+  this.usedKeyCount = 0;
+  var firstRow = [];
+  for (var leafNum = 0; leafNum &lt; this.size; leafNum++) {
+    var keypair = new LamportKeypair();
+    this._leaves.push(keypair);
+    firstRow.push(hash(keypair.pubKey));
+  }
+  this.levels = [firstRow];
+
+  var levels = Math.ceil(Math.log2(this.size));
+  for (var i = 1; i &lt;= levels; i++) {
+    // for each level in the tree starting w/ 1 above the bottom
+    var curRow = [];
+    var prevRow = this.levels[i - 1];
+    for (var k = 0; k &lt; prevRow.length; k += 2) {
+      // for each hash in the previous row
+      // hash it and the next hash&#39;s values
+      var h = hash(prevRow[k] + prevRow[k + 1]);
+      curRow.push(h);
+    }
+    this.levels[i] = curRow;
+  }
+
+  this.numOfLevels = this.levels.length;
+  this.numOfKeys = this._leaves.length;
+  this.topHash = this.levels[this.levels.length - 1][0];
+};
+</code></pre>
+<p>So here's what the Merkle tree in our key tree looks like, with each array containing the hashes of its two child hashes:</p>
+<p><img src="../attachments/2014-12-13-merkle-tree.png" alt="A sample Merkle key tree" /></p>
+<h2 id="message-signing">Message Signing</h2>
+<p>To use this tree to sign a message, we have to:</p>
+<ol>
+<li>Select a keypair (<code>leaf</code>) and use it to generate a signature.</li>
+<li>Publish the signature, along with the path of hashes at each level necessary to recreate the <code>topHash</code></li>
+</ol>
+<p>We must publish the path so that once the user verifies that the Lamport keypair we used was legitimate, they can hash the public key + sibling public key, and continue hashing these hashes + their siblings until they reach the <code>topHash</code>.</p>
+<pre><code data-lang="js">MerkleKeyTree.prototype.sign = function(msg) {
+  var finalSig = {};
+  if (this.usedKeyCount === this.size - 1) {
+    throw new Error(&#39;This is your last keypair on this tree);
+  }
+  // select the first unused keypair
+  for (var i = 0; i &lt; this.numOfKeys; i++) {
+    if (!this._leaves[i].used) {
+      var randomKeypair = this._leaves[i];
+      var randomKeypairIndex = i;
+      break;
+    }
+  }
+  finalSig.keyPairId = randomKeypairIndex;
+  finalSig.pubKey = randomKeypair.pubKey;
+  finalSig.message = msg;
+  finalSig.signature = randomKeypair.sign(msg);
+  // create the path of the hashes needed to get from the
+    // published keypair to the topHash
+  finalSig.path = [];
+  var curLevel = 0;
+  var idx = randomKeypairIndex;
+  while (curLevel &lt; this.numOfLevels) {
+    if (idx % 2) {
+      finalSig.path.push(this.levels[curLevel][idx - 1])
+    } else {
+      finalSig.path.push(this.levels[curLevel][idx + 1])
+    }
+    curLevel++;
+    idx = parentIdx(idx);
+  }
+// publish the signature, set key properties
+  finalSig.path[finalSig.path.length - 1] = this.topHash;
+  randomKeypair.used = true;
+  this.usedKeyCount++;
+  return finalSig;
+};
+</code></pre>
+<p>Here's an example signature of a message signed by the key tree above:</p>
+<p><img src="../attachments/2014-12-13-merkle-sig.png" alt="A sample signature" /></p>
+<h2 id="message-verification">Message Verification</h2>
+<p>To verify a signature, we must first verify <code>signature</code> against <code>pubKey</code>, just as we would with a traditional Lamport key. Then, we'll have to hash the <code>pubKey</code> and hash the result (in the right order) with its sibling key's hash, and keep taking the output and hashing it with its sibling in the next level of the key tree until we end up with one, lone hash.</p>
+<pre><code data-lang="js">MerkleKeyTree.prototype.verify = function (sigObj) {
+  var idx = sigObj.keyPairId;
+  var lamport = this._leaves[idx];
+  // if this is a valid Lamport signature...
+  if (lamport.verify(sigObj.message, sigObj.signature)) {
+    // ... calculate the sibling hashes until you reach the topHash
+    var h = hash(sigObj.pubKey);
+    for (var i = 0; i &lt; sigObj.path.length - 1; i++) {
+      var auth = sigObj.path[i];
+      if (idx % 2) {
+        h = hash(auth + h);
+      } else {
+        h = hash(h + auth);
+      }
+      idx = parentIdx(idx); // gets the parent level hash index
+    }
+    if (h === sigObj.path[sigObj.path.length - 1]) {
+      return true;
+    }
+  }
+  return false;
+};
+</code></pre>
+<p>If at the end of this process we end up with the string at the end of our <code>path</code> array (which is also our <code>topHash</code>), we'll know that the key used to sign the message belongs to this key tree and this <code>topHash</code> (which should match up with the <code>topHash</code> of the expected owner and message signer).</p>
+<p>In conclusion, with this signature scheme, we've allowed a user to generate one large key tree that can be used to sign arbitrarily many messages (including newer keytrees) while only marginally increasing the signature size. While this can't be used for secretly encrypting messages, in many applications (e.g. authenticating cryptocurrency transactions), a signature scheme is just enough.</p>
+<p>I hope both of these posts have shed some light on how wild yet understandable some cryptographic concepts can be. You can always check out my repo <a rel="noopener external" target="_blank" href="https://github.com/sunny-g/lamport-merkle.js">here</a> and as always, thanks for reading!</p>
+
+    </div>
+
+    
+    <footer class="post-tags">
+        
+        <a href="/tags/cryptography" class="tag">#cryptography</a>
+        
+        <a href="/tags/merkle" class="tag">#merkle</a>
+        
+        <a href="/tags/digital-signatures" class="tag">#digital signatures</a>
+        
+    </footer>
+    
+</article>
+
+        </main>
+
+        <footer>
+            <hr>
+<div id="footer-container">
+    <p>Made using <a target="_blank" rel="noopener noreferrer" href="https://github.com/Speyll/anemone">anemone</a> Zola theme</p>
+</div>
+
+        </footer>
+
+        <!-- Move JS to end of body and add defer -->
+        <script src="https://sunnyg.io/js/script.js" defer></script>
+    </body>
+</html>
